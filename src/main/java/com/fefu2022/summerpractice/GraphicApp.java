@@ -78,6 +78,17 @@ public class GraphicApp {
                 graphicPanel.drawFunction(functionTextField.getText());
             }
         });
+        JButton clearButton = new JButton();
+        clearButton.setText("Очистить");
+        clearButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                graphicPanel.clear();
+                functionTextField.setText("");
+            }
+            
+        });
+        panel.add(clearButton);
         
         panel.add(Box.createVerticalStrut(10));
         panel.add(new JLabel("Способ отрисовки:"));

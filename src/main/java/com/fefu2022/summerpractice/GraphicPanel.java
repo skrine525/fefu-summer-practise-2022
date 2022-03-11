@@ -20,19 +20,24 @@ public class GraphicPanel extends JPanel {
     private Color graphicColor = Color.RED;
     private int width, height;
     private int offsetX = 0, offsetY = 0;
-    private int graphicUnitSize = 30;
-    private double graphicScale = 1;
+    private int graphicUnitSize;
+    private double graphicScale;
     private String strFunction;
     public int drawType = 0;
+    
+    private static final int DEFAULT_SCALE = 1;
+    private static final int DEFAULT_UNIT_SIZE = 30;
     
     public GraphicPanel(){
         super();
         
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)); // Устанавливаем другой курсор
         
+        graphicScale = DEFAULT_SCALE;
+        graphicUnitSize = DEFAULT_UNIT_SIZE;
+        
+        
         GraphicPanel panel = this;
-        
-        
         // Добавляем слушателей мыши
         MouseAdapter mouseAdapter = new MouseAdapter() {
             private int lastX, lastY;
@@ -310,6 +315,15 @@ public class GraphicPanel extends JPanel {
     
     public void drawFunction(String function){
         strFunction = function;
+        repaint();
+    }
+    
+    public void clear(){
+        offsetX = 0;
+        offsetY = 0;
+        graphicScale = DEFAULT_SCALE;
+        graphicUnitSize = DEFAULT_UNIT_SIZE;
+        strFunction = "";
         repaint();
     }
 }
