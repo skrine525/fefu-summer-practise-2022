@@ -10,12 +10,14 @@ package com.fefu2022.summerpractice;
  */
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class GraphicApp {
     private JFrame frame;
     private JLabel statusLabel;
     private JTextField colorTextField;
-    private JTextField nameTextField;
+    private JTextField functionTextField;
     private GraphicPanel graphicPanel;
 
     public GraphicApp(){
@@ -24,7 +26,7 @@ public class GraphicApp {
     }
 
     private void createFrame() {
-        frame = new JFrame("Графическое приложение");
+        frame = new JFrame("График функции");
         frame.setSize(600, 300);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
@@ -37,15 +39,15 @@ public class GraphicApp {
         Container mainContainer = frame.getContentPane();
         mainContainer.setLayout(new BorderLayout());
 
-        JPanel bottomPanel = new JPanel(); // нижняя панель состояния
-        bottomPanel.setBackground(Color.lightGray); // фон светло-серый
-        mainContainer.add(bottomPanel, BorderLayout.SOUTH); // распологается внизу
+        JPanel bottomPanel = new JPanel(); // Нижняя панель состояния
+        bottomPanel.setBackground(Color.lightGray); // Фон светло-серый
+        mainContainer.add(bottomPanel, BorderLayout.SOUTH); // Распологается внизу
 
         statusLabel = new JLabel("Инициализация приложения.."); // Элемент, который будет показывать текст состояния программы
-        bottomPanel.add(statusLabel);    // добавляем его в нижнюю панель
+        bottomPanel.add(statusLabel);    // Добавляем его в нижнюю панель
 
-        Box leftPanel = createLeftPanel(); // создаем левую панель в другом методе
-        mainContainer.add(leftPanel, BorderLayout.WEST); // эта панель будет слева
+        Box leftPanel = createLeftPanel(); // Создаем левую панель в другом методе
+        mainContainer.add(leftPanel, BorderLayout.WEST); // Эта панель будет слева
         
         graphicPanel = new GraphicPanel();
         graphicPanel.setBackground(Color.WHITE);
@@ -53,34 +55,60 @@ public class GraphicApp {
     }
 
     private Box createLeftPanel() {
-        Box panel = Box.createVerticalBox();  // вертикальный Box
+        Box panel = Box.createVerticalBox();  // Вертикальный Box
         // Box это контейнер, в котором элементы выстраиваются в одном порядке
-
-        JLabel title = new JLabel("<html>Построение графика функции</html>");
-        // чтобы добавить перевод строки в тексте, нужно писать в тегах <html>
+        
+        panel.add(Box.createVerticalStrut(10)); // Отступы
+        JLabel title = new JLabel("<html>Панель управления</html>", JLabel.CENTER);
+        // Чтобы добавить перевод строки в тексте, нужно писать в тегах <html>
         title.setFont(new Font(null, Font.BOLD, 12)); // изменяем шрифт
+        
         panel.add(title);
 
-        panel.add(Box.createVerticalStrut(20)); //в Box можно добавлять отступы
-
-        panel.add(new JLabel("Название:"));
-
-        nameTextField = new JTextField(){
+        //panel.add(Box.createVerticalStrut(20)); // Отступы
+        panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
+        panel.add(new JLabel("Функция:"));
+        functionTextField = new JTextField(8);  // Поле ввода названия
+        functionTextField.setMaximumSize(new Dimension(300, 30)); // Чтобы не был слишком большим
+        panel.add(functionTextField);
+        functionTextField.addActionListener(new AbstractAction(){
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                graphicPanel.drawFunction(functionTextField.getText());
+            }
+        });
+        
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(new JLabel("Способ отрисовки:"));
+        JRadioButton drawTypeButton1 = new JRadioButton(), drawTypeButton2 = new JRadioButton();
+        drawTypeButton1.setText("Способ 1");
+        drawTypeButton1.setSelected(true);
+        drawTypeButton2.setText("Способ 2");
+        drawTypeButton1.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                graphicPanel.drawType = 0;
+                graphicPanel.repaint();
+            }
             
-        };  // поле ввода названия
-        nameTextField.setMaximumSize(new Dimension(300, 30)); // чтобы не был слишком большим
-        panel.add(nameTextField);
+        });
+        drawTypeButton2.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                graphicPanel.drawType = 1;
+                graphicPanel.repaint();
+            }
+            
+        });
+        ButtonGroup bp1 = new ButtonGroup();
+        panel.add(drawTypeButton1);
+        panel.add(drawTypeButton2);
+        bp1.add(drawTypeButton1);
+        bp1.add(drawTypeButton2);
 
-        panel.add(new JLabel("Цвет:"));
+        panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
 
-        colorTextField = new JTextField("#FF0000");  // поле ввода с начальным текстом
-        colorTextField.setMaximumSize(new Dimension(300, 30));
-        panel.add(colorTextField);
-
-        panel.add(Box.createVerticalGlue()); // также в Box можно добавлять заполнитель пустого места
-
-        JButton button = new JButton("Нарисовать"); // Кнопка
-        panel.add(button);
         return panel;
     }
 }
