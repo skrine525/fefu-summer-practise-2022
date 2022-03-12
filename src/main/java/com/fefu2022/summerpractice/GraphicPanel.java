@@ -19,7 +19,7 @@ public class GraphicPanel extends JPanel {
     private Color graphicColor = Color.RED;
     private int width, height;
     private int offsetX = 0, offsetY = 0;
-    private int graphicUnitSize;
+    private int drawGraphicUnitSize, graphicUnitSize, scaleCount;
     private double graphicScale;
     private String strFunction;
     public int drawType = 0;
@@ -33,7 +33,9 @@ public class GraphicPanel extends JPanel {
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)); // Устанавливаем другой курсор
         
         graphicScale = DEFAULT_SCALE;
+        drawGraphicUnitSize = DEFAULT_UNIT_SIZE;
         graphicUnitSize = DEFAULT_UNIT_SIZE;
+        scaleCount = 0;
         
         
         GraphicPanel panel = this;
@@ -44,16 +46,28 @@ public class GraphicPanel extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
                 if(contains(e.getPoint())){
-                    panel.graphicUnitSize += (int) -e.getPreciseWheelRotation();
+                    int wheelRotation = (int) -e.getPreciseWheelRotation();
+                    panel.drawGraphicUnitSize += wheelRotation;
                     
-                    if(panel.graphicUnitSize < 20){
-                        panel.graphicScale *= 5;
-                        panel.graphicUnitSize += 20;
+                    int scale = 0;
+                    for(int i = 0; i < scaleCount; i++){
+                        scale = scale * 2 + 1;
                     }
-                    else if(panel.graphicUnitSize > 40){
-                        panel.graphicScale /= 5;
-                        panel.graphicUnitSize -= 20;
+                    
+                    panel.graphicUnitSize += wheelRotation + scale * Math.signum(wheelRotation);
+                    
+                    if(panel.drawGraphicUnitSize <= 20){
+                        panel.graphicScale *= 2;
+                        panel.drawGraphicUnitSize += 20;
+                        scaleCount--;
                     }
+                    else if(panel.drawGraphicUnitSize >= 40){
+                        panel.graphicScale /= 2;
+                        panel.drawGraphicUnitSize -= 20;
+                        scaleCount++;
+                    }
+                    
+                    GraphicApp.statusLabel.setText(panel.drawGraphicUnitSize + " " + panel.graphicUnitSize + " " + wheelRotation);
                     
                     panel.repaint();
                 }
@@ -85,6 +99,7 @@ public class GraphicPanel extends JPanel {
         addMouseWheelListener(mouseAdapter);
     }
     
+    @Override
     public void paint(Graphics g)
     {
         super.paint(g);
@@ -100,57 +115,57 @@ public class GraphicPanel extends JPanel {
     }
 
     private void drawGrid(Graphics g) { 
-        for(int x = width / 2; x < width - offsetX; x += graphicUnitSize){  // Цикл от центра до правого края
+        for(int x = width / 2; x < width - offsetX; x += drawGraphicUnitSize){  // Цикл от центра до правого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(x + offsetX, 0, x + offsetX, height);    // Вертикальная линия
             
             // Отрисовка пометок на оси X справа
             g.setColor(Color.DARK_GRAY);
             int realX = x - width / 2;
-            if(realX % graphicUnitSize == 0){
-                int num = realX / graphicUnitSize;
+            if(realX % drawGraphicUnitSize == 0){
+                int num = realX / drawGraphicUnitSize;
                 if(num % 5 == 0)
                     g.drawString(String.valueOf(num * graphicScale), x + offsetX + 2, height / 2 + offsetY - 2);
             }
         }
         
-        for(int x = width / 2; x > -offsetX; x -= graphicUnitSize){  // Цикл от центра до леваого края
+        for(int x = width / 2; x > -offsetX; x -= drawGraphicUnitSize){  // Цикл от центра до леваого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(x + offsetX, 0, x + offsetX, height);   // Вертикальная линия
             
             // Отрисовка пометок на оси X слева
             g.setColor(Color.DARK_GRAY);
             int realX = x - width / 2;
-            if(realX % graphicUnitSize == 0 && realX != 0){
-                int num = realX / graphicUnitSize;
+            if(realX % drawGraphicUnitSize == 0 && realX != 0){
+                int num = realX / drawGraphicUnitSize;
                 if(num % 5 == 0)
                     g.drawString(String.valueOf(num * graphicScale), x + offsetX + 2, height / 2 + offsetY - 2);
             }
         }
         
-        for(int y = height / 2; y < height - offsetY; y += graphicUnitSize){  // Цикл от центра до верхнего края
+        for(int y = height / 2; y < height - offsetY; y += drawGraphicUnitSize){  // Цикл от центра до верхнего края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вниз
             g.setColor(Color.DARK_GRAY);
             int realY = y - height / 2;
-            if(realY % graphicUnitSize == 0 && realY != 0){
-                int num = realY / graphicUnitSize;
+            if(realY % drawGraphicUnitSize == 0 && realY != 0){
+                int num = realY / drawGraphicUnitSize;
                 if(num % 5 == 0)
                     g.drawString(String.valueOf(-num * graphicScale), width / 2 + offsetX + 2, y + offsetY - 2);
             }
         }
         
-        for(int y = height / 2; y > -offsetY; y -= graphicUnitSize){  // Цикл от центра до леваого края
+        for(int y = height / 2; y > -offsetY; y -= drawGraphicUnitSize){  // Цикл от центра до леваого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вверх
             g.setColor(Color.DARK_GRAY);
             int realY = y - height / 2;
-            if(realY % graphicUnitSize == 0 && realY != 0){
-                int num = realY / graphicUnitSize;
+            if(realY % drawGraphicUnitSize == 0 && realY != 0){
+                int num = realY / drawGraphicUnitSize;
                 if(num % 5 == 0)
                     g.drawString(String.valueOf(-num * graphicScale), width / 2 + offsetX + 2, y + offsetY - 2);
             }
@@ -179,7 +194,7 @@ public class GraphicPanel extends JPanel {
             double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                realY = (int) (calculateFunction(realX) / graphicScale);
+                realY = (int) ((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
             }
             catch (Exception e){
                 canDraw = false;
@@ -224,7 +239,7 @@ public class GraphicPanel extends JPanel {
             double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                realY = calculateFunction(x);
+                realY = calculateFunction(x) / graphicScale;
             }
             catch (Exception e){
                 canDraw = false;
@@ -262,17 +277,17 @@ public class GraphicPanel extends JPanel {
                 int c = Integer.valueOf(p[1]);
                 int b = Integer.valueOf(p[2]);
                 
-                double rad = x/30.0;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double sin = Math.sin(rad * b);       // Вычисляем синус угла
-                y = (sin * graphicUnitSize * c);  // Переводим значение синуса в координату нашей системы
+                y = (sin * c);  // Переводим значение синуса в координату нашей системы
             }
             else if(p[0].equals("cos") && p.length > 2){
                 int c = Integer.valueOf(p[1]);
                 int b = Integer.valueOf(p[2]);
                 
-                double rad = x/30.0;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double cos = Math.cos(rad * b);       // Вычисляем косинус угла
-                y = (cos * graphicUnitSize * c);  // Переводим значение синуса в координату нашей системы
+                y = (cos * c);  // Переводим значение синуса в координату нашей системы
             }
             else if(p[0].equals("g")){
                 int c = Integer.valueOf(p[1]);
@@ -282,8 +297,8 @@ public class GraphicPanel extends JPanel {
                 y = c / x;
             }
             else if(p[0].equals("pow") && p.length > 2){
-                int c = Integer.valueOf(p[1]);
-                int b = Integer.valueOf(p[2]);
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
                 
                 y = Math.pow(x * c, b);
             }
@@ -297,10 +312,10 @@ public class GraphicPanel extends JPanel {
                 int c = Integer.valueOf(p[1]);
                 int b = Integer.valueOf(p[2]);
                 
-                double rad = x/30.0;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double cos = Math.cos(rad * b);       // Вычисляем синус угла
                 double sin = Math.sin(rad * c);       // Вычисляем синус угла
-                y = (sin * cos * graphicUnitSize);  // Переводим значение синуса в координату нашей системы
+                y = (sin * cos);  // Переводим значение синуса в координату нашей системы
             }
         }
         else
@@ -318,7 +333,9 @@ public class GraphicPanel extends JPanel {
         offsetX = 0;
         offsetY = 0;
         graphicScale = DEFAULT_SCALE;
+        drawGraphicUnitSize = DEFAULT_UNIT_SIZE;
         graphicUnitSize = DEFAULT_UNIT_SIZE;
+        scaleCount = 0;
         strFunction = "";
         repaint();
     }

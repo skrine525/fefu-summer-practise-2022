@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
 
 public class GraphicApp {
     private JFrame frame;
-    private JLabel statusLabel;
+    public static JLabel statusLabel;
     private JTextField colorTextField;
     private JTextField functionTextField;
     private GraphicPanel graphicPanel;
