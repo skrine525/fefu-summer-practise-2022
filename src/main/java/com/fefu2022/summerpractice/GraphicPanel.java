@@ -14,7 +14,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Line2D;
-import java.lang.ref.Reference;
 
 public class GraphicPanel extends JPanel {
     private Color graphicColor = Color.RED;
@@ -219,35 +218,32 @@ public class GraphicPanel extends JPanel {
         
         boolean hasLastPoint = false;
         int lastPointX = 0, lastPointY = 0;
-        
-        int rangeStart = -(offsetX + width / 2) / graphicUnitSize - 1;
-        int rangeEnd = (width / 2 - offsetX) / graphicUnitSize + 1;
-        
-        for(double x = rangeStart; x <= rangeEnd; x++){
+
+        for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
             boolean canDraw = true;
-            double y = 0;
+            double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                y = calculateFunction(x);
+                realY = calculateFunction(x);
             }
             catch (Exception e){
                 canDraw = false;
             }
             
             if(canDraw){
-                int gX = (int) x * graphicUnitSize;
-                int gY = (int) y * graphicUnitSize;
+                int y = (int) (height / 2 - realY);
+                x = (int) (realX + (width / 2));
                 
                 if(hasLastPoint){
-                    g2.draw(new Line2D.Float(lastPointX + offsetX, lastPointY + offsetY, gX + offsetX, gY + offsetY));
+                    g2.draw(new Line2D.Float(lastPointX + offsetX, lastPointY + offsetY, x + offsetX, y + offsetY));
                     
-                    lastPointX = gX;
-                    lastPointY = gY;
+                    lastPointX = x;
+                    lastPointY = y;
                 }
                 else{
                     hasLastPoint = true;
-                    lastPointX = gX;
-                    lastPointY = gY;
+                    lastPointX = x;
+                    lastPointY = y;
                 }
             }
             else
