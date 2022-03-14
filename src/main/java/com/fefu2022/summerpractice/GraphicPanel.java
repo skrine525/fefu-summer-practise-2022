@@ -19,26 +19,27 @@ public class GraphicPanel extends JPanel {
     private Color graphicColor = Color.RED;
     private int width, height;
     private int offsetX = 0, offsetY = 0;
-    private int drawGraphicUnitSize, graphicUnitSize, scaleCount;
+    private byte drawGraphicUnitSize;
+    private short scaleCount;
+    private long graphicUnitSize;
     private double graphicScale;
     private String strFunction;
     public int drawType = 0;
     
-    private static final int DEFAULT_SCALE = 1;
-    private static final int DEFAULT_UNIT_SIZE = 30;
+    private static final int DEFAULT_GRAPHIC_SCALE = 1;
+    private static final int DEFAULT_GRAPHIC_UNIT_SIZE = 30;
     
     public GraphicPanel(){
         super();
         
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)); // Устанавливаем другой курсор
         
-        graphicScale = DEFAULT_SCALE;
-        drawGraphicUnitSize = DEFAULT_UNIT_SIZE;
-        graphicUnitSize = DEFAULT_UNIT_SIZE;
+        graphicScale = DEFAULT_GRAPHIC_SCALE;
+        drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
         scaleCount = 0;
         
         
-        GraphicPanel panel = this;
         // Добавляем слушателей мыши
         MouseAdapter mouseAdapter = new MouseAdapter() {
             private int lastX, lastY;
@@ -47,29 +48,48 @@ public class GraphicPanel extends JPanel {
             public void mouseWheelMoved(MouseWheelEvent e){
                 if(contains(e.getPoint())){
                     int wheelRotation = (int) -e.getPreciseWheelRotation();
-                    panel.drawGraphicUnitSize += wheelRotation;
                     
-                    int scale = 0;
-                    for(int i = 0; i < scaleCount; i++){
-                        scale = scale * 2 + 1;
+                    drawGraphicUnitSize += wheelRotation;
+                    int dScale = 0;
+                    
+                    if(drawGraphicUnitSize < 20){
+                        graphicScale *= 2;
+                        drawGraphicUnitSize += 20;
+                        dScale = -1;
+                    }
+                    else if(drawGraphicUnitSize >= 40){
+                        graphicScale /= 2;
+                        drawGraphicUnitSize -= 20;
+                        dScale = 1;
                     }
                     
-                    panel.graphicUnitSize += wheelRotation + scale * Math.signum(wheelRotation);
+                    if(Math.signum(wheelRotation) == -1)
+                        scaleCount += dScale;
                     
-                    if(panel.drawGraphicUnitSize <= 20){
-                        panel.graphicScale *= 2;
-                        panel.drawGraphicUnitSize += 20;
-                        scaleCount--;
-                    }
-                    else if(panel.drawGraphicUnitSize >= 40){
-                        panel.graphicScale /= 2;
-                        panel.drawGraphicUnitSize -= 20;
-                        scaleCount++;
+                    double scale = 0;
+                    for(int i = 0; i < Math.abs(scaleCount); i++){
+                        if(Math.signum(scaleCount) == 1)
+                            scale = scale * 2 + Math.abs(wheelRotation);
+                        else if (Math.signum(scaleCount) == -1)
+                            scale = scale / 2 - 1;
                     }
                     
-                    GraphicApp.statusLabel.setText(panel.drawGraphicUnitSize + " " + panel.graphicUnitSize + " " + wheelRotation);
+                    graphicUnitSize += wheelRotation + scale * Math.signum(wheelRotation);
+                    if(Math.signum(wheelRotation) == 1)
+                        scaleCount += dScale;
                     
-                    panel.repaint();
+                    GraphicApp.statusLabel.setText(drawGraphicUnitSize + " " + graphicUnitSize + " " + wheelRotation + " " + scaleCount);
+                    
+                    /*
+                    int cursorOnGraphicX = e.getLocationOnScreen().x - getX() - width / 2;
+                    int dY = e.getLocationOnScreen().y - getY();
+                    if(cursorOnGraphicX < width / 2)
+                        offsetX -= (int) (cursorOnGraphicX * graphicUnitSize / drawGraphicUnitSize);
+                    else if(width / 2 < cursorOnGraphicX)
+                        offsetX += (int) (cursorOnGraphicX * graphicUnitSize / drawGraphicUnitSize);
+                    */
+                    
+                    repaint();
                 }
             }
             
@@ -86,11 +106,11 @@ public class GraphicPanel extends JPanel {
                 if(contains(e.getPoint())){
                     int dX = e.getLocationOnScreen().x - getX();
                     int dY = e.getLocationOnScreen().y - getY();
-                    panel.offsetX += dX - lastX;
-                    panel.offsetY += dY - lastY;
+                    offsetX += dX - lastX;
+                    offsetY += dY - lastY;
                     lastX = dX;
                     lastY = dY;
-                    panel.repaint();
+                    repaint();
                 }
             }
         };
@@ -194,7 +214,7 @@ public class GraphicPanel extends JPanel {
             double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                realY = (int) ((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
+                realY = (int) Math.round((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
             }
             catch (Exception e){
                 canDraw = false;
@@ -332,11 +352,17 @@ public class GraphicPanel extends JPanel {
     public void clear(){
         offsetX = 0;
         offsetY = 0;
-        graphicScale = DEFAULT_SCALE;
-        drawGraphicUnitSize = DEFAULT_UNIT_SIZE;
-        graphicUnitSize = DEFAULT_UNIT_SIZE;
+        graphicScale = DEFAULT_GRAPHIC_SCALE;
+        drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
         scaleCount = 0;
         strFunction = "";
+        repaint();
+    }
+    
+    public void moveToOrigin(){
+        offsetX = 0;
+        offsetY = 0;
         repaint();
     }
 }

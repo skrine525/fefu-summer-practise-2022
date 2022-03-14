@@ -90,6 +90,17 @@ public class GraphicApp {
         });
         panel.add(clearButton);
         
+        JButton moveToOriginButton = new JButton();
+        moveToOriginButton.setText("Центр графика");
+        moveToOriginButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                graphicPanel.moveToOrigin();
+            }
+            
+        });
+        panel.add(moveToOriginButton);
+        
         panel.add(Box.createVerticalStrut(10));
         panel.add(new JLabel("Способ отрисовки:"));
         JRadioButton drawTypeButton1 = new JRadioButton(), drawTypeButton2 = new JRadioButton();
