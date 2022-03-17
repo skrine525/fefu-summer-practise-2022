@@ -100,34 +100,6 @@ public class GraphicApp {
             
         });
         panel.add(moveToOriginButton);
-        
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(new JLabel("Способ отрисовки:"));
-        JRadioButton drawTypeButton1 = new JRadioButton(), drawTypeButton2 = new JRadioButton();
-        drawTypeButton1.setText("Способ 1");
-        drawTypeButton1.setSelected(true);
-        drawTypeButton2.setText("Способ 2");
-        drawTypeButton1.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                graphicPanel.drawType = 0;
-                graphicPanel.repaint();
-            }
-            
-        });
-        drawTypeButton2.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                graphicPanel.drawType = 1;
-                graphicPanel.repaint();
-            }
-            
-        });
-        ButtonGroup bp1 = new ButtonGroup();
-        panel.add(drawTypeButton1);
-        panel.add(drawTypeButton2);
-        bp1.add(drawTypeButton1);
-        bp1.add(drawTypeButton2);
 
         panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
 

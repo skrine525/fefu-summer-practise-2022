@@ -21,10 +21,8 @@ public class GraphicPanel extends JPanel {
     private int offsetX = 0, offsetY = 0;
     private byte drawGraphicUnitSize;
     private short scaleCount;
-    private long graphicUnitSize;
-    private double graphicScale;
+    private double graphicScale, graphicUnitSize;
     private String strFunction;
-    public int drawType = 0;
     
     private static final int DEFAULT_GRAPHIC_SCALE = 1;
     private static final int DEFAULT_GRAPHIC_UNIT_SIZE = 30;
@@ -36,7 +34,7 @@ public class GraphicPanel extends JPanel {
         
         graphicScale = DEFAULT_GRAPHIC_SCALE;
         drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
-        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = drawGraphicUnitSize / graphicScale;
         scaleCount = 0;
         
         
@@ -50,33 +48,17 @@ public class GraphicPanel extends JPanel {
                     int wheelRotation = (int) -e.getPreciseWheelRotation();
                     
                     drawGraphicUnitSize += wheelRotation;
-                    int dScale = 0;
-                    
                     if(drawGraphicUnitSize < 20){
                         graphicScale *= 2;
                         drawGraphicUnitSize += 20;
-                        dScale = -1;
+                        scaleCount--;
                     }
                     else if(drawGraphicUnitSize >= 40){
                         graphicScale /= 2;
                         drawGraphicUnitSize -= 20;
-                        dScale = 1;
+                        scaleCount++;
                     }
-                    
-                    if(Math.signum(wheelRotation) == -1)
-                        scaleCount += dScale;
-                    
-                    double scale = 0;
-                    for(int i = 0; i < Math.abs(scaleCount); i++){
-                        if(Math.signum(scaleCount) == 1)
-                            scale = scale * 2 + Math.abs(wheelRotation);
-                        else if (Math.signum(scaleCount) == -1)
-                            scale = scale / 2 - 1;
-                    }
-                    
-                    graphicUnitSize += wheelRotation + scale * Math.signum(wheelRotation);
-                    if(Math.signum(wheelRotation) == 1)
-                        scaleCount += dScale;
+                    graphicUnitSize = drawGraphicUnitSize / graphicScale;
                     
                     GraphicApp.statusLabel.setText(drawGraphicUnitSize + " " + graphicUnitSize + " " + wheelRotation + " " + scaleCount);
                     
@@ -128,10 +110,7 @@ public class GraphicPanel extends JPanel {
         
         drawGrid(g); // Рисуем сетку
         drawAxis(g); // Рисуем оси
-        if(drawType == 0)
-            drawGraphic(g); // Рисуем график
-        else
-            drawGraphic2(g);
+        drawGraphic(g); // Рисуем график
     }
 
     private void drawGrid(Graphics g) { 
@@ -214,8 +193,7 @@ public class GraphicPanel extends JPanel {
             double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                double scale = drawGraphicUnitSize / graphicScale;
-                realY = (int) Math.round((calculateFunction(realX / scale)) * scale);
+                realY = (int) Math.round((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
             }
             catch (Exception e){
                 canDraw = false;
@@ -244,74 +222,29 @@ public class GraphicPanel extends JPanel {
         g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
     }
     
-    private void drawGraphic2(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(graphicColor); // Устанавливаем цвет графика
-        
-        Stroke lastStroke = g2.getStroke(); // Сохраняем данные предыдущего Stroke
-        g2.setStroke(new BasicStroke(2)); // Устанавливаем размер линии графика
-        
-        
-        boolean hasLastPoint = false;
-        int lastPointX = 0, lastPointY = 0;
-
-        for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
-            boolean canDraw = true;
-            double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
-            
-            try{
-                realY = calculateFunction(x) / graphicScale;
-            }
-            catch (Exception e){
-                canDraw = false;
-            }
-            
-            if(canDraw){
-                int y = (int) (height / 2 - realY);
-                x = (int) (realX + (width / 2));
-                
-                if(hasLastPoint){
-                    g2.draw(new Line2D.Float(lastPointX + offsetX, lastPointY + offsetY, x + offsetX, y + offsetY));
-                    
-                    lastPointX = x;
-                    lastPointY = y;
-                }
-                else{
-                    hasLastPoint = true;
-                    lastPointX = x;
-                    lastPointY = y;
-                }
-            }
-            else
-                hasLastPoint = false;
-        }
-        
-        g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
-    }
-    
     private double calculateFunction(double x) throws Exception{
         double y = 0;
         
         String[] p = strFunction.split(" ");
         if(p.length > 1){
             if(p[0].equals("sin") && p.length > 2){
-                int c = Integer.valueOf(p[1]);
-                int b = Integer.valueOf(p[2]);
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
                 
                 double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double sin = Math.sin(rad * b);       // Вычисляем синус угла
                 y = (sin * c);  // Переводим значение синуса в координату нашей системы
             }
             else if(p[0].equals("cos") && p.length > 2){
-                int c = Integer.valueOf(p[1]);
-                int b = Integer.valueOf(p[2]);
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
                 
                 double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double cos = Math.cos(rad * b);       // Вычисляем косинус угла
                 y = (cos * c);  // Переводим значение синуса в координату нашей системы
             }
             else if(p[0].equals("g")){
-                int c = Integer.valueOf(p[1]);
+                double c = Double.valueOf(p[1]);
                 
                 if(x == 0)
                     throw new Exception();
@@ -324,14 +257,14 @@ public class GraphicPanel extends JPanel {
                 y = Math.pow(x * c, b);
             }
             else if(p[0].equals("s") && p.length > 2){
-                int c = Integer.valueOf(p[1]);
-                int b = Integer.valueOf(p[2]);
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
                 
                 y = c * x + b;
             }
             else if(p[0].equals("fuck") && p.length > 2){
-                int c = Integer.valueOf(p[1]);
-                int b = Integer.valueOf(p[2]);
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
                 
                 double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
                 double cos = Math.cos(rad * b);       // Вычисляем синус угла
@@ -355,7 +288,7 @@ public class GraphicPanel extends JPanel {
         offsetY = 0;
         graphicScale = DEFAULT_GRAPHIC_SCALE;
         drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
-        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = drawGraphicUnitSize / graphicScale;
         scaleCount = 0;
         strFunction = "";
         repaint();
