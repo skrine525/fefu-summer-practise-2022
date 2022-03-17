@@ -214,7 +214,8 @@ public class GraphicPanel extends JPanel {
             double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
             
             try{
-                realY = (int) Math.round((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
+                double scale = drawGraphicUnitSize / graphicScale;
+                realY = (int) Math.round((calculateFunction(realX / scale)) * scale);
             }
             catch (Exception e){
                 canDraw = false;
