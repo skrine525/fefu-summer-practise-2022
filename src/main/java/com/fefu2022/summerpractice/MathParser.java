@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class MathParser {
 
-    private static HashMap<String, Double> var;
+    private HashMap<String, Double> var;
 
     public MathParser() {
         var = new HashMap<>();
@@ -27,7 +27,7 @@ public class MathParser {
      * @param varName  имя переменной
      * @param varValue значение переменной
      */
-    public static void setVariable(String varName, Double varValue) {
+    public void setVariable(String varName, Double varValue) {
         var.put(varName, varValue);
     }
 

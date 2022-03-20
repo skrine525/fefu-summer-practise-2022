@@ -299,76 +299,29 @@ public class GraphicPanel extends JPanel {
     }
     
     private double calculateFunction(double x) throws Exception{
+
         double y = 0;
-
-        String[] p = strFunction.split("x");
-
-        String col_y=p[0]+x+p[1];
-
-        /*
-        if(p.length > 1){
-            if(p[0].equals("sin") && p.length > 2){
-                double c = Double.valueOf(p[1]);
-                double b = Double.valueOf(p[2]);
-
-                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-                double sin = Math.sin(rad * b);       // Вычисляем синус угла
-                y = (sin * c);  // Переводим значение синуса в координату нашей системы
-            }
-            else if(p[0].equals("cos") && p.length > 2){
-                double c = Double.valueOf(p[1]);
-                double b = Double.valueOf(p[2]);
-
-                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-                double cos = Math.cos(rad * b);       // Вычисляем косинус угла
-                y = (cos * c);  // Переводим значение синуса в координату нашей системы
-            }
-            else if(p[0].equals("g")){
-                double c = Double.valueOf(p[1]);
-
-                if(x == 0)
-                    throw new Exception();
-                y = c / x;
-            }
-            else if(p[0].equals("pow") && p.length > 2){
-                double c = Double.valueOf(p[1]);
-                double b = Double.valueOf(p[2]);
-
-                y = Math.pow(x * c, b);
-            }
-            else if(p[0].equals("s") && p.length > 2){
-                double c = Double.valueOf(p[1]);
-                double b = Double.valueOf(p[2]);
-
-                y = c * x + b;
-            }
-            else if(p[0].equals("fuck") && p.length > 2){
-                double c = Double.valueOf(p[1]);
-                double b = Double.valueOf(p[2]);
-
-                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-                double cos = Math.cos(rad * b);       // Вычисляем синус угла
-                double sin = Math.sin(rad * c);       // Вычисляем синус угла
-                y = (sin * cos);  // Переводим значение синуса в координату нашей системы
-            }
-        }
-        else
-            throw new Exception();
-        */
+//        String[] p = strFunction.split("x");
+//        String col_y=p[0];
+//        int j=1;
+//        while (p.length < j){
+//            System.out.println("work loop");
+//            col_y=x+p[j];
+//            j++;
+//        }
 
         MathParser parser = new MathParser();
-
-        String[] expressions = {col_y};
-
-        for(String expression:expressions){
-            //System.out.print(expression+"  ");
-            try{
-                //System.out.print(parser.Parse(expression)+"\n");
-                y=parser.Parse(expression);
-            } catch(Exception e){
-                //System.out.println(e.getMessage());
-            }
-        }
+        parser.setVariable("x",x);
+        y=parser.Parse(strFunction);
+//        String[] expressions = {col_y};
+//        for(String expression:expressions){
+//            try{
+//                System.out.print(parser.Parse(expression)+"\n");
+//                y=parser.Parse(expression);
+//            } catch(Exception e){
+//                System.out.println(e.getMessage());
+//            }
+//        }
         return y;
     }
     
