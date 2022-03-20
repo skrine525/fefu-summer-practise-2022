@@ -13,7 +13,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 public class GraphicPanel extends JPanel {
     private Color graphicColor = Color.RED;
@@ -113,18 +116,39 @@ public class GraphicPanel extends JPanel {
         drawGraphic(g); // Рисуем график
     }
 
-    private void drawGrid(Graphics g) { 
+    private void drawGrid(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        
         for(int x = width / 2; x < width - offsetX; x += drawGraphicUnitSize){  // Цикл от центра до правого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(x + offsetX, 0, x + offsetX, height);    // Вертикальная линия
             
             // Отрисовка пометок на оси X справа
-            g.setColor(Color.DARK_GRAY);
             int realX = x - width / 2;
             if(realX % drawGraphicUnitSize == 0){
                 int num = realX / drawGraphicUnitSize;
-                if(num % 5 == 0)
-                    g.drawString(String.valueOf(num * graphicScale), x + offsetX + 2, height / 2 + offsetY - 2);
+                if(num % 5 == 0){
+                    int markX = x + offsetX + 2;
+                    int markY = height / 2 + offsetY - 2;
+                    String markText = String.valueOf(-num * graphicScale);
+                    Rectangle2D markTextSize = getTextSize(markText, getFont());
+                    int markWidth = (int) Math.round(markTextSize.getWidth());
+                    int markHeight = (int) Math.round(markTextSize.getHeight());
+                    
+                    if(realX != 0){
+                        if(markY + 2 > height){
+                            markY += (height - markY - 2);
+                        }
+                        else if(markY - markHeight - 2 < 0){
+                            markY -= (markY - markHeight - 2);
+                        }
+                    }
+                    
+                    g.setColor(Color.WHITE);
+                    g2.fillRect(markX, markY - markHeight, markWidth, markHeight);
+                    g.setColor(Color.DARK_GRAY);
+                    g.drawString(markText, markX, markY);
+                }
             }
         }
         
@@ -133,12 +157,29 @@ public class GraphicPanel extends JPanel {
             g.drawLine(x + offsetX, 0, x + offsetX, height);   // Вертикальная линия
             
             // Отрисовка пометок на оси X слева
-            g.setColor(Color.DARK_GRAY);
             int realX = x - width / 2;
             if(realX % drawGraphicUnitSize == 0 && realX != 0){
                 int num = realX / drawGraphicUnitSize;
-                if(num % 5 == 0)
-                    g.drawString(String.valueOf(num * graphicScale), x + offsetX + 2, height / 2 + offsetY - 2);
+                if(num % 5 == 0){
+                    int markX = x + offsetX + 2;
+                    int markY = height / 2 + offsetY - 2;
+                    String markText = String.valueOf(-num * graphicScale);
+                    Rectangle2D markTextSize = getTextSize(markText, getFont());
+                    int markWidth = (int) Math.round(markTextSize.getWidth());
+                    int markHeight = (int) Math.round(markTextSize.getHeight());
+                    
+                    if(markY + 2 > height){
+                        markY += (height - markY - 2);
+                    }
+                    else if(markY - markHeight - 2 < 0){
+                        markY -= (markY - markHeight - 2);
+                    }
+                    
+                    g.setColor(Color.WHITE);
+                    g2.fillRect(markX, markY - markHeight, markWidth, markHeight);
+                    g.setColor(Color.DARK_GRAY);
+                    g.drawString(markText, markX, markY);
+                }
             }
         }
         
@@ -147,12 +188,29 @@ public class GraphicPanel extends JPanel {
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вниз
-            g.setColor(Color.DARK_GRAY);
             int realY = y - height / 2;
             if(realY % drawGraphicUnitSize == 0 && realY != 0){
                 int num = realY / drawGraphicUnitSize;
-                if(num % 5 == 0)
-                    g.drawString(String.valueOf(-num * graphicScale), width / 2 + offsetX + 2, y + offsetY - 2);
+                if(num % 5 == 0){
+                    int markX = width / 2 + offsetX + 2;
+                    int markY = y + offsetY - 2;
+                    String markText = String.valueOf(-num * graphicScale);
+                    Rectangle2D markTextSize = getTextSize(markText, getFont());
+                    int markWidth = (int) Math.round(markTextSize.getWidth());
+                    int markHeight = (int) Math.round(markTextSize.getHeight());
+                    
+                    if(markX + markWidth + 2 > width){
+                        markX += (width - markX - markWidth - 2);
+                    }
+                    else if (markX - 2 < 0){
+                        markX -= (markX - 2);
+                    }
+                    
+                    g.setColor(Color.WHITE);
+                    g2.fillRect(markX, markY - markHeight, markWidth, markHeight);
+                    g.setColor(Color.DARK_GRAY);
+                    g.drawString(markText, markX, markY);
+                }
             }
         }
         
@@ -161,12 +219,29 @@ public class GraphicPanel extends JPanel {
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вверх
-            g.setColor(Color.DARK_GRAY);
             int realY = y - height / 2;
             if(realY % drawGraphicUnitSize == 0 && realY != 0){
                 int num = realY / drawGraphicUnitSize;
-                if(num % 5 == 0)
-                    g.drawString(String.valueOf(-num * graphicScale), width / 2 + offsetX + 2, y + offsetY - 2);
+                if(num % 5 == 0){
+                    int markX = width / 2 + offsetX + 2;
+                    int markY = y + offsetY - 2;
+                    String markText = String.valueOf(-num * graphicScale);
+                    Rectangle2D markTextSize = getTextSize(markText, getFont());
+                    int markWidth = (int) Math.round(markTextSize.getWidth());
+                    int markHeight = (int) Math.round(markTextSize.getHeight());
+                    
+                    if(markX + markWidth + 2 > width){
+                        markX += (width - markX - markWidth - 2);
+                    }
+                    else if (markX - 2 < 0){
+                        markX -= (markX - 2);
+                    }
+                    
+                    g.setColor(Color.WHITE);
+                    g2.fillRect(markX, markY - markHeight, markWidth, markHeight);
+                    g.setColor(Color.DARK_GRAY);
+                    g.drawString(markText, markX, markY);
+                }
             }
         }
     }
@@ -230,66 +305,68 @@ public class GraphicPanel extends JPanel {
 
         String col_y=p[0]+x+p[1];
 
+        /*
+        if(p.length > 1){
+            if(p[0].equals("sin") && p.length > 2){
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
 
-//        if(p.length > 1){
-//            if(p[0].equals("sin") && p.length > 2){
-//                double c = Double.valueOf(p[1]);
-//                double b = Double.valueOf(p[2]);
-//
-//                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-//                double sin = Math.sin(rad * b);       // Вычисляем синус угла
-//                y = (sin * c);  // Переводим значение синуса в координату нашей системы
-//            }
-//            else if(p[0].equals("cos") && p.length > 2){
-//                double c = Double.valueOf(p[1]);
-//                double b = Double.valueOf(p[2]);
-//
-//                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-//                double cos = Math.cos(rad * b);       // Вычисляем косинус угла
-//                y = (cos * c);  // Переводим значение синуса в координату нашей системы
-//            }
-//            else if(p[0].equals("g")){
-//                double c = Double.valueOf(p[1]);
-//
-//                if(x == 0)
-//                    throw new Exception();
-//                y = c / x;
-//            }
-//            else if(p[0].equals("pow") && p.length > 2){
-//                double c = Double.valueOf(p[1]);
-//                double b = Double.valueOf(p[2]);
-//
-//                y = Math.pow(x * c, b);
-//            }
-//            else if(p[0].equals("s") && p.length > 2){
-//                double c = Double.valueOf(p[1]);
-//                double b = Double.valueOf(p[2]);
-//
-//                y = c * x + b;
-//            }
-//            else if(p[0].equals("fuck") && p.length > 2){
-//                double c = Double.valueOf(p[1]);
-//                double b = Double.valueOf(p[2]);
-//
-//                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
-//                double cos = Math.cos(rad * b);       // Вычисляем синус угла
-//                double sin = Math.sin(rad * c);       // Вычисляем синус угла
-//                y = (sin * cos);  // Переводим значение синуса в координату нашей системы
-//            }
-//        }
-//        else
-//            throw new Exception();
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double sin = Math.sin(rad * b);       // Вычисляем синус угла
+                y = (sin * c);  // Переводим значение синуса в координату нашей системы
+            }
+            else if(p[0].equals("cos") && p.length > 2){
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
+
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double cos = Math.cos(rad * b);       // Вычисляем косинус угла
+                y = (cos * c);  // Переводим значение синуса в координату нашей системы
+            }
+            else if(p[0].equals("g")){
+                double c = Double.valueOf(p[1]);
+
+                if(x == 0)
+                    throw new Exception();
+                y = c / x;
+            }
+            else if(p[0].equals("pow") && p.length > 2){
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
+
+                y = Math.pow(x * c, b);
+            }
+            else if(p[0].equals("s") && p.length > 2){
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
+
+                y = c * x + b;
+            }
+            else if(p[0].equals("fuck") && p.length > 2){
+                double c = Double.valueOf(p[1]);
+                double b = Double.valueOf(p[2]);
+
+                double rad = x;   // Переводим текущую коориднату в радианы, 30 пикселей по ширине == 1 радиану
+                double cos = Math.cos(rad * b);       // Вычисляем синус угла
+                double sin = Math.sin(rad * c);       // Вычисляем синус угла
+                y = (sin * cos);  // Переводим значение синуса в координату нашей системы
+            }
+        }
+        else
+            throw new Exception();
+        */
+
         MathParser parser = new MathParser();
 
         String[] expressions = {col_y};
 
         for(String expression:expressions){
-            System.out.print(expression+"  ");
+            //System.out.print(expression+"  ");
             try{
-                System.out.print(parser.Parse(expression)+"\n");
+                //System.out.print(parser.Parse(expression)+"\n");
                 y=parser.Parse(expression);
             } catch(Exception e){
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
         }
         return y;
@@ -315,5 +392,11 @@ public class GraphicPanel extends JPanel {
         offsetX = 0;
         offsetY = 0;
         repaint();
+    }
+    
+    // Метод расчитывания размеров текста на экране
+    private static Rectangle2D getTextSize(String text, Font font) {
+        TextLayout tl = new TextLayout(text, font, new FontRenderContext(null, true, true));
+        return tl.getBounds();
     }
 }
