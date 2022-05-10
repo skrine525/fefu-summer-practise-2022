@@ -312,7 +312,8 @@ public class GraphicPanel extends JPanel {
 
         MathParser parser = new MathParser();
         parser.setVariable("x",x);
-        y=parser.Parse(strFunction);
+        if (parser.Parse(strFunction)!=0){
+        y=parser.Parse(strFunction);}
 //        String[] expressions = {col_y};
 //        for(String expression:expressions){
 //            try{
@@ -322,8 +323,15 @@ public class GraphicPanel extends JPanel {
 //                System.out.println(e.getMessage());
 //            }
 //        }
-        return y;
+        if ( y==Double.POSITIVE_INFINITY || y==Double.NEGATIVE_INFINITY ||Math.abs(y)>=20 ){
+            throw new Exception();
+        
+        }
+        else{
+        return y;}
+    
     }
+   
     
     public void drawFunction(String function){
         strFunction = function;

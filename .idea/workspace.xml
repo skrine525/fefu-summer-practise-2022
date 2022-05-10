@@ -50,7 +50,12 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH" value="235" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../Документы/Downloads/openjfx-18_windows-x64_bin-sdk/javafx-sdk-18/lib" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RunManager">
     <configuration name="Starter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -84,11 +89,24 @@
       <workItem from="1647566623622" duration="4043000" />
       <workItem from="1647659098502" duration="4033000" />
       <workItem from="1647698171510" duration="4115000" />
+      <workItem from="1648605427130" duration="512000" />
+      <workItem from="1649057911209" duration="1543000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -101,7 +119,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/dev-render" />
+                        <option value="origin/with-parser" />
                       </list>
                     </value>
                   </entry>

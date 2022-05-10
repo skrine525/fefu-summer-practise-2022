@@ -3,12 +3,8 @@ package com.fefu2022.summerpractice;
 import java.util.HashMap;
 
 /**
- * Класс модифицирован автором ShamaN.
  * Метод рекурсивного спуска для интерпретирования математических выражений.
- * Поддерживаются тригонометрические функции с одним/двумя параметрами.
  *
- * @author shurik
- * @version 1.1
  */
 public class MathParser {
 
@@ -287,7 +283,7 @@ public class MathParser {
             case "cosh": // гиперболический косинус
                 return new Result(Math.cosh(r.acc), r.rest);
             case "tan":
-                return new Result(Math.tan(r.acc), r.rest);
+                return new Result(Math.sin(r.acc)/Math.cos(r.acc), r.rest);
             case "tanh": // гиперболический тангенс
                 return new Result(Math.tanh(r.acc), r.rest);
             case "ctg":
