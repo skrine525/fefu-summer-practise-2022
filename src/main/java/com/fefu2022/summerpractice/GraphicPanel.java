@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.fefu2022.summerpractice;
 
-/**
- *
- * @author Admin
- */
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -17,15 +9,23 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 public class GraphicPanel extends JPanel {
-    private Color graphicColor = Color.RED;
+    public class GraphicData{
+        public String expression;
+        public Color color;
+        
+        public GraphicData(String expression, Color color){
+            this.expression = expression; this.color = color;
+        }
+    }
+    
     private int width, height;
     private int offsetX = 0, offsetY = 0;
-    private byte drawGraphicUnitSize;
-    private short scaleCount;
+    private byte gridUnitSize;
     private double graphicScale, graphicUnitSize;
-    private String strFunction;
+    private ArrayList<GraphicData> graphics;
     
     private static final int DEFAULT_GRAPHIC_SCALE = 1;
     private static final int DEFAULT_GRAPHIC_UNIT_SIZE = 30;
@@ -36,10 +36,9 @@ public class GraphicPanel extends JPanel {
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)); // Устанавливаем другой курсор
         
         graphicScale = DEFAULT_GRAPHIC_SCALE;
-        drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
-        graphicUnitSize = drawGraphicUnitSize / graphicScale;
-        scaleCount = 0;
-        
+        gridUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE / DEFAULT_GRAPHIC_SCALE;
+        graphics = new ArrayList<GraphicData>();
         
         // Добавляем слушателей мыши
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -50,28 +49,26 @@ public class GraphicPanel extends JPanel {
                 if(contains(e.getPoint())){
                     int wheelRotation = (int) -e.getPreciseWheelRotation();
                     
-                    drawGraphicUnitSize += wheelRotation;
-                    if(drawGraphicUnitSize < 20){
+                    gridUnitSize += wheelRotation;
+                    if(gridUnitSize < 20){
                         graphicScale *= 2;
-                        drawGraphicUnitSize += 20;
-                        scaleCount--;
+                        gridUnitSize += 20;
                     }
-                    else if(drawGraphicUnitSize >= 40){
+                    else if(gridUnitSize >= 40){
                         graphicScale /= 2;
-                        drawGraphicUnitSize -= 20;
-                        scaleCount++;
+                        gridUnitSize -= 20;
                     }
-                    graphicUnitSize = drawGraphicUnitSize / graphicScale;
+                    graphicUnitSize = gridUnitSize / graphicScale;
                     
-                    GraphicApp.statusLabel.setText(drawGraphicUnitSize + " " + graphicUnitSize + " " + wheelRotation + " " + scaleCount);
+                    GraphicApp.statusLabel.setText(gridUnitSize + " " + graphicUnitSize + " " + wheelRotation);
                     
                     /*
                     int cursorOnGraphicX = e.getLocationOnScreen().x - getX() - width / 2;
                     int dY = e.getLocationOnScreen().y - getY();
                     if(cursorOnGraphicX < width / 2)
-                        offsetX -= (int) (cursorOnGraphicX * graphicUnitSize / drawGraphicUnitSize);
+                        offsetX -= (int) (cursorOnGraphicX * graphicUnitSize / gridUnitSize);
                     else if(width / 2 < cursorOnGraphicX)
-                        offsetX += (int) (cursorOnGraphicX * graphicUnitSize / drawGraphicUnitSize);
+                        offsetX += (int) (cursorOnGraphicX * graphicUnitSize / gridUnitSize);
                     */
                     
                     repaint();
@@ -111,22 +108,22 @@ public class GraphicPanel extends JPanel {
         width = getWidth();
         height = getHeight();
         
-        drawGrid(g); // Рисуем сетку
-        drawAxis(g); // Рисуем оси
-        drawGraphic(g); // Рисуем график
+        drawGrid(g);        // Рисуем сетку
+        drawAxis(g);        // Рисуем оси
+        drawGraphic(g);     // Рисуем график
     }
 
     private void drawGrid(Graphics g){
         Graphics2D g2 = (Graphics2D) g;
         
-        for(int x = width / 2; x < width - offsetX; x += drawGraphicUnitSize){  // Цикл от центра до правого края
+        for(int x = width / 2; x < width - offsetX; x += gridUnitSize){  // Цикл от центра до правого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(x + offsetX, 0, x + offsetX, height);    // Вертикальная линия
             
             // Отрисовка пометок на оси X справа
             int realX = x - width / 2;
-            if(realX % drawGraphicUnitSize == 0){
-                int num = realX / drawGraphicUnitSize;
+            if(realX % gridUnitSize == 0){
+                int num = realX / gridUnitSize;
                 if(num % 5 == 0){
                     int markX = x + offsetX + 2;
                     int markY = height / 2 + offsetY - 2;
@@ -152,14 +149,14 @@ public class GraphicPanel extends JPanel {
             }
         }
         
-        for(int x = width / 2; x > -offsetX; x -= drawGraphicUnitSize){  // Цикл от центра до леваого края
+        for(int x = width / 2; x > -offsetX; x -= gridUnitSize){  // Цикл от центра до леваого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(x + offsetX, 0, x + offsetX, height);   // Вертикальная линия
             
             // Отрисовка пометок на оси X слева
             int realX = x - width / 2;
-            if(realX % drawGraphicUnitSize == 0 && realX != 0){
-                int num = realX / drawGraphicUnitSize;
+            if(realX % gridUnitSize == 0 && realX != 0){
+                int num = realX / gridUnitSize;
                 if(num % 5 == 0){
                     int markX = x + offsetX + 2;
                     int markY = height / 2 + offsetY - 2;
@@ -183,14 +180,14 @@ public class GraphicPanel extends JPanel {
             }
         }
         
-        for(int y = height / 2; y < height - offsetY; y += drawGraphicUnitSize){  // Цикл от центра до верхнего края
+        for(int y = height / 2; y < height - offsetY; y += gridUnitSize){  // Цикл от центра до верхнего края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вниз
             int realY = y - height / 2;
-            if(realY % drawGraphicUnitSize == 0 && realY != 0){
-                int num = realY / drawGraphicUnitSize;
+            if(realY % gridUnitSize == 0 && realY != 0){
+                int num = realY / gridUnitSize;
                 if(num % 5 == 0){
                     int markX = width / 2 + offsetX + 2;
                     int markY = y + offsetY - 2;
@@ -214,14 +211,14 @@ public class GraphicPanel extends JPanel {
             }
         }
         
-        for(int y = height / 2; y > -offsetY; y -= drawGraphicUnitSize){  // Цикл от центра до леваого края
+        for(int y = height / 2; y > -offsetY; y -= gridUnitSize){  // Цикл от центра до леваого края
             g.setColor(Color.LIGHT_GRAY);  // Задаем серый цвет
             g.drawLine(0, y + offsetY, width, y + offsetY);    // Горизонтальная линия
             
             // Отрисовка пометок на оси Y вверх
             int realY = y - height / 2;
-            if(realY % drawGraphicUnitSize == 0 && realY != 0){
-                int num = realY / drawGraphicUnitSize;
+            if(realY % gridUnitSize == 0 && realY != 0){
+                int num = realY / gridUnitSize;
                 if(num % 5 == 0){
                     int markX = width / 2 + offsetX + 2;
                     int markY = y + offsetY - 2;
@@ -254,87 +251,85 @@ public class GraphicPanel extends JPanel {
     
     private void drawGraphic(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(graphicColor); // Устанавливаем цвет графика
         
         Stroke lastStroke = g2.getStroke(); // Сохраняем данные предыдущего Stroke
         g2.setStroke(new BasicStroke(2)); // Устанавливаем размер линии графика
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);    // Включаем антиалиасинг
         
+        for(var graph : graphics){
+            g.setColor(graph.color);
         
-        boolean hasLastPoint = false;
-        int lastPointX = 0, lastPointY = 0;
+            boolean hasLastPoint = false;
+            double lastPointX = 0, lastPointY = 0;
 
-        for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
-            boolean canDraw = true;
-            double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
-            
-            try{
-                realY = (int) Math.round((calculateFunction(realX / graphicUnitSize)) * graphicUnitSize);
-            }
-            catch (Exception e){
-                canDraw = false;
-            }
-            
-            if(canDraw){
-                int y = (int) (height / 2 - realY);
-                //System.out.println("f("+ realX + ")="+realY);
-                
-                if(hasLastPoint){
-                    g2.draw(new Line2D.Float(lastPointX + offsetX, lastPointY + offsetY, x + offsetX, y + offsetY));
-                    
-                    lastPointX = x;
-                    lastPointY = y;
+            for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
+                //boolean canDraw = true;
+                double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
+
+                realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
+
+                if(!Double.isNaN(realY)){
+                    if(Math.abs(realY) == Double.POSITIVE_INFINITY){
+                        double leftLimitSign = calculateFunction(graph.expression, (realX - 0.01) / graphicUnitSize) * graphicUnitSize;
+                        leftLimitSign = Math.signum(leftLimitSign);
+                        double rightLimitSign = calculateFunction(graph.expression, (realX + 0.01) / graphicUnitSize) * graphicUnitSize;
+                        rightLimitSign = Math.signum(rightLimitSign);
+
+                        double y = Double.POSITIVE_INFINITY;
+                        if(leftLimitSign == -1)
+                            y = Double.NEGATIVE_INFINITY;
+
+                        g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+
+                        if(rightLimitSign == -1)
+                            lastPointY = Double.NEGATIVE_INFINITY;
+                        else if(rightLimitSign == 1)
+                            lastPointY = Double.POSITIVE_INFINITY;
+
+                        lastPointX = x;
+                    }
+                    else{
+                        int y = (int) Math.round(height / 2 - realY);
+                        //System.out.println("f("+ realX + ")="+realY);
+
+                        if(hasLastPoint){
+                            g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+
+                            lastPointX = (double) x;
+                            lastPointY = (double) y;
+                        }
+                        else{
+                            hasLastPoint = true;
+                            lastPointX = (double) x;
+                            lastPointY = (double) y;
+                        }
+                    }
                 }
-                else{
-                    hasLastPoint = true;
-                    lastPointX = x;
-                    lastPointY = y;
-                }
+                else
+                    hasLastPoint = false;
             }
-            else
-                hasLastPoint = false;
         }
-
         
         g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
     }
     
-    private double calculateFunction(double x) throws Exception{
-
-        double y = 0;
-//        String[] p = strFunction.split("x");
-//        String col_y=p[0];
-//        int j=1;
-//        while (p.length < j){
-//            System.out.println("work loop");
-//            col_y=x+p[j];
-//            j++;
-//        }
-
+    private double calculateFunction(String exp, double x)/* throws Exception*/{
         MathParser parser = new MathParser();
-        parser.setVariable("x",x);
-        if (parser.Parse(strFunction)!=0){
-        y=parser.Parse(strFunction);}
-//        String[] expressions = {col_y};
-//        for(String expression:expressions){
-//            try{
-//                System.out.print(parser.Parse(expression)+"\n");
-//                y=parser.Parse(expression);
-//            } catch(Exception e){
-//                System.out.println(e.getMessage());
-//            }
-//        }
-        if ( y==Double.POSITIVE_INFINITY || y==Double.NEGATIVE_INFINITY ||Math.abs(y)>=20 ){
-            throw new Exception();
+        parser.setVariable("x", x);
         
+        double y;
+        try{
+            y = parser.Parse(exp);
         }
-        else{
-        return y;}
-    
+        catch(Exception e){
+            y = 0;
+        }
+        
+        return y;
     }
-   
     
-    public void drawFunction(String function){
-        strFunction = function;
+    public void addGraphic(String expression, Color color){
+        graphics.add(new GraphicData(expression, color));
         repaint();
     }
     
@@ -342,10 +337,9 @@ public class GraphicPanel extends JPanel {
         offsetX = 0;
         offsetY = 0;
         graphicScale = DEFAULT_GRAPHIC_SCALE;
-        drawGraphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
-        graphicUnitSize = drawGraphicUnitSize / graphicScale;
-        scaleCount = 0;
-        strFunction = "";
+        gridUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
+        graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE / DEFAULT_GRAPHIC_SCALE;
+        graphics.clear();
         repaint();
     }
     
@@ -353,6 +347,41 @@ public class GraphicPanel extends JPanel {
         offsetX = 0;
         offsetY = 0;
         repaint();
+    }
+    
+    // Метод создания линии графика со всеми характеристиками
+    private Line2D.Float GraphicLine(double x1, double y1, double x2, double y2){
+        int x1_int, x2_int, y1_int, y2_int;
+        
+        if(x1 == Double.POSITIVE_INFINITY)
+            x1_int = width;
+        else if(x1 == Double.NEGATIVE_INFINITY)
+            x1_int = 0;
+        else
+            x1_int = ((int) x1) + offsetX;
+        
+        if(x2 == Double.POSITIVE_INFINITY)
+            x2_int = width;
+        else if(x2 == Double.NEGATIVE_INFINITY)
+            x2_int = 0;
+        else
+            x2_int = ((int) x2) + offsetX;
+        
+        if(y1 == Double.NEGATIVE_INFINITY)
+            y1_int = height;
+        else if(y1 == Double.POSITIVE_INFINITY)
+            y1_int = 0;
+        else
+            y1_int = ((int) y1) + offsetY;
+        
+        if(y2 == Double.NEGATIVE_INFINITY)
+            y2_int = height;
+        else if(y2 == Double.POSITIVE_INFINITY)
+            y2_int = 0;
+        else
+            y2_int = ((int) y2) + offsetY;
+        
+        return new Line2D.Float(x1_int, y1_int, x2_int, y2_int);
     }
     
     // Метод расчитывания размеров текста на экране

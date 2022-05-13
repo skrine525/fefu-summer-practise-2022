@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.fefu2022.summerpractice;
 
-/**
- *
- * @author Admin
- */
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -75,7 +67,8 @@ public class GraphicApp {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                graphicPanel.drawFunction(functionTextField.getText());
+                graphicPanel.addGraphic(functionTextField.getText(), Color.RED);
+                functionTextField.setText("");
             }
         });
         JButton clearButton = new JButton();
