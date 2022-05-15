@@ -12,6 +12,61 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class GraphicPanel extends JPanel {
+    ////////////////////////////////////////
+    // Статические методы
+    
+    // Метод создания линии графика со всеми характеристиками
+    private Line2D.Float GraphicLine(double x1, double y1, double x2, double y2){
+        int x1_int, x2_int, y1_int, y2_int;
+        
+        if(x1 == Double.POSITIVE_INFINITY)
+            x1_int = width;
+        else if(x1 == Double.NEGATIVE_INFINITY)
+            x1_int = 0;
+        else
+            x1_int = ((int) x1) + offsetX;
+        
+        if(x2 == Double.POSITIVE_INFINITY)
+            x2_int = width;
+        else if(x2 == Double.NEGATIVE_INFINITY)
+            x2_int = 0;
+        else
+            x2_int = ((int) x2) + offsetX;
+        
+        if(y1 == Double.NEGATIVE_INFINITY)
+            y1_int = height;
+        else if(y1 == Double.POSITIVE_INFINITY)
+            y1_int = 0;
+        else
+            y1_int = ((int) y1) + offsetY;
+        
+        if(y2 == Double.NEGATIVE_INFINITY)
+            y2_int = height;
+        else if(y2 == Double.POSITIVE_INFINITY)
+            y2_int = 0;
+        else
+            y2_int = ((int) y2) + offsetY;
+        
+        return new Line2D.Float(x1_int, y1_int, x2_int, y2_int);
+    }
+    
+    // Метод расчитывания размеров текста на экране
+    private static Rectangle2D getTextSize(String text, Font font) {
+        TextLayout tl = new TextLayout(text, font, new FontRenderContext(null, true, true));
+        return tl.getBounds();
+    }
+    
+    // Метод форматизации пометки на сетке
+    private static String formatGridMark(double mark){
+        if(mark % 1 == 0)
+            return String.valueOf(Math.round(mark));
+        else
+            return String.valueOf(mark);
+    }
+    
+    ////////////////////////////////////////
+    // Внутренние классы
+    
     public class GraphicData{
         public String expression;
         public Color color;
@@ -20,6 +75,9 @@ public class GraphicPanel extends JPanel {
             this.expression = expression; this.color = color;
         }
     }
+    
+    ////////////////////////////////////////
+    // Код класса
     
     private int width, height;
     private int offsetX = 0, offsetY = 0;
@@ -127,7 +185,7 @@ public class GraphicPanel extends JPanel {
                 if(num % 5 == 0){
                     int markX = x + offsetX + 2;
                     int markY = height / 2 + offsetY - 2;
-                    String markText = String.valueOf(-num * graphicScale);
+                    String markText = formatGridMark(num * graphicScale);
                     Rectangle2D markTextSize = getTextSize(markText, getFont());
                     int markWidth = (int) Math.round(markTextSize.getWidth());
                     int markHeight = (int) Math.round(markTextSize.getHeight());
@@ -160,7 +218,7 @@ public class GraphicPanel extends JPanel {
                 if(num % 5 == 0){
                     int markX = x + offsetX + 2;
                     int markY = height / 2 + offsetY - 2;
-                    String markText = String.valueOf(-num * graphicScale);
+                    String markText = formatGridMark(num * graphicScale);
                     Rectangle2D markTextSize = getTextSize(markText, getFont());
                     int markWidth = (int) Math.round(markTextSize.getWidth());
                     int markHeight = (int) Math.round(markTextSize.getHeight());
@@ -191,7 +249,7 @@ public class GraphicPanel extends JPanel {
                 if(num % 5 == 0){
                     int markX = width / 2 + offsetX + 2;
                     int markY = y + offsetY - 2;
-                    String markText = String.valueOf(-num * graphicScale);
+                    String markText = formatGridMark(-num * graphicScale);
                     Rectangle2D markTextSize = getTextSize(markText, getFont());
                     int markWidth = (int) Math.round(markTextSize.getWidth());
                     int markHeight = (int) Math.round(markTextSize.getHeight());
@@ -222,7 +280,7 @@ public class GraphicPanel extends JPanel {
                 if(num % 5 == 0){
                     int markX = width / 2 + offsetX + 2;
                     int markY = y + offsetY - 2;
-                    String markText = String.valueOf(-num * graphicScale);
+                    String markText = formatGridMark(-num * graphicScale);
                     Rectangle2D markTextSize = getTextSize(markText, getFont());
                     int markWidth = (int) Math.round(markTextSize.getWidth());
                     int markHeight = (int) Math.round(markTextSize.getHeight());
@@ -285,7 +343,8 @@ public class GraphicPanel extends JPanel {
                             lastPointY = Double.NEGATIVE_INFINITY;
                         else if(rightLimitSign == 1)
                             lastPointY = Double.POSITIVE_INFINITY;
-
+                        
+                        x++;
                         lastPointX = x;
                     }
                     else{
@@ -347,46 +406,5 @@ public class GraphicPanel extends JPanel {
         offsetX = 0;
         offsetY = 0;
         repaint();
-    }
-    
-    // Метод создания линии графика со всеми характеристиками
-    private Line2D.Float GraphicLine(double x1, double y1, double x2, double y2){
-        int x1_int, x2_int, y1_int, y2_int;
-        
-        if(x1 == Double.POSITIVE_INFINITY)
-            x1_int = width;
-        else if(x1 == Double.NEGATIVE_INFINITY)
-            x1_int = 0;
-        else
-            x1_int = ((int) x1) + offsetX;
-        
-        if(x2 == Double.POSITIVE_INFINITY)
-            x2_int = width;
-        else if(x2 == Double.NEGATIVE_INFINITY)
-            x2_int = 0;
-        else
-            x2_int = ((int) x2) + offsetX;
-        
-        if(y1 == Double.NEGATIVE_INFINITY)
-            y1_int = height;
-        else if(y1 == Double.POSITIVE_INFINITY)
-            y1_int = 0;
-        else
-            y1_int = ((int) y1) + offsetY;
-        
-        if(y2 == Double.NEGATIVE_INFINITY)
-            y2_int = height;
-        else if(y2 == Double.POSITIVE_INFINITY)
-            y2_int = 0;
-        else
-            y2_int = ((int) y2) + offsetY;
-        
-        return new Line2D.Float(x1_int, y1_int, x2_int, y2_int);
-    }
-    
-    // Метод расчитывания размеров текста на экране
-    private static Rectangle2D getTextSize(String text, Font font) {
-        TextLayout tl = new TextLayout(text, font, new FontRenderContext(null, true, true));
-        return tl.getBounds();
     }
 }
