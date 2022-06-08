@@ -11,6 +11,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
+import org.mariuszgromada.math.mxparser.*;      // Какой-то чоткий прекрасный мат. 
+
 public class GraphicPanel extends JPanel {
     ////////////////////////////////////////
     // Статические методы
@@ -68,11 +70,14 @@ public class GraphicPanel extends JPanel {
     // Внутренние классы
     
     public class GraphicData{
-        public String expression;
+        public Expression expression;
+        public Argument xArg;
         public Color color;
         
-        public GraphicData(String expression, Color color){
-            this.expression = expression; this.color = color;
+        public GraphicData(String expressionString, Color color){
+            this.xArg = new Argument("x");
+            this.expression = new Expression(expressionString, this.xArg);
+            this.color = color;
         }
     }
     
@@ -324,48 +329,49 @@ public class GraphicPanel extends JPanel {
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
-                realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
+                //realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
+                graph.xArg.setArgumentValue(realX / graphicUnitSize);
+                realY = graph.expression.calculate() * graphicUnitSize;
 
-                if(!Double.isNaN(realY)){
-                    if(Math.abs(realY) == Double.POSITIVE_INFINITY){
-                        double leftLimitSign = calculateFunction(graph.expression, (realX - 0.01) / graphicUnitSize) * graphicUnitSize;
-                        leftLimitSign = Math.signum(leftLimitSign);
-                        double rightLimitSign = calculateFunction(graph.expression, (realX + 0.01) / graphicUnitSize) * graphicUnitSize;
-                        rightLimitSign = Math.signum(rightLimitSign);
+                if(Double.isNaN(realY)){
+                    graph.xArg.setArgumentValue((realX - 0.01) / graphicUnitSize);
+                    double leftLimitSign = graph.expression.calculate() * graphicUnitSize;
+                    leftLimitSign = Math.signum(leftLimitSign);
 
-                        double y = Double.POSITIVE_INFINITY;
-                        if(leftLimitSign == -1)
-                            y = Double.NEGATIVE_INFINITY;
+                    graph.xArg.setArgumentValue((realX + 0.01) / graphicUnitSize);
+                    double rightLimitSign = graph.expression.calculate() * graphicUnitSize;
+                    rightLimitSign = Math.signum(rightLimitSign);
 
+                    double y = Double.POSITIVE_INFINITY;
+                    if(leftLimitSign == -1)
+                        y = Double.NEGATIVE_INFINITY;
+
+                    g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+
+                    if(rightLimitSign == -1)
+                        lastPointY = Double.NEGATIVE_INFINITY;
+                    else if(rightLimitSign == 1)
+                        lastPointY = Double.POSITIVE_INFINITY;
+
+                    x++;
+                    lastPointX = x;
+                }
+                else{
+                    int y = (int) Math.round(height / 2 - realY);
+                    //System.out.println("f("+ realX + ")="+realY);
+
+                    if(hasLastPoint){
                         g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
 
-                        if(rightLimitSign == -1)
-                            lastPointY = Double.NEGATIVE_INFINITY;
-                        else if(rightLimitSign == 1)
-                            lastPointY = Double.POSITIVE_INFINITY;
-                        
-                        x++;
-                        lastPointX = x;
+                        lastPointX = (double) x;
+                        lastPointY = (double) y;
                     }
                     else{
-                        int y = (int) Math.round(height / 2 - realY);
-                        //System.out.println("f("+ realX + ")="+realY);
-
-                        if(hasLastPoint){
-                            g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
-
-                            lastPointX = (double) x;
-                            lastPointY = (double) y;
-                        }
-                        else{
-                            hasLastPoint = true;
-                            lastPointX = (double) x;
-                            lastPointY = (double) y;
-                        }
+                        hasLastPoint = true;
+                        lastPointX = (double) x;
+                        lastPointY = (double) y;
                     }
                 }
-                else
-                    hasLastPoint = false;
             }
         }
         
@@ -373,8 +379,11 @@ public class GraphicPanel extends JPanel {
     }
     
     private double calculateFunction(String exp, double x)/* throws Exception*/{
+        /*
         MathParser parser = new MathParser();
         parser.setVariable("x", x);
+        
+        System.out.print("f("+x+")=");
         
         double y;
         try{
@@ -383,6 +392,13 @@ public class GraphicPanel extends JPanel {
         catch(Exception e){
             y = 0;
         }
+        
+        System.out.println(y);
+        */
+        
+        Argument a = new Argument("x="+x);
+        Expression e = new Expression(exp, a);
+        double y = e.calculate();
         
         return y;
     }
