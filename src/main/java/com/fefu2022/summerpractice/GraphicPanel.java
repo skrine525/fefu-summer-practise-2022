@@ -11,7 +11,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
-import org.mariuszgromada.math.mxparser.*;      // Какой-то чоткий прекрасный мат. 
+// Какой-то чоткий прекрасный мат. парсер
+import org.mariuszgromada.math.mxparser.*;
+import org.mariuszgromada.math.mxparser.parsertokens.Token;
 
 public class GraphicPanel extends JPanel {
     ////////////////////////////////////////
@@ -69,15 +71,40 @@ public class GraphicPanel extends JPanel {
     ////////////////////////////////////////
     // Внутренние классы
     
-    public class GraphicData{
-        public Expression expression;
-        public Argument xArg;
-        public Color color;
+    public class Graphic{
+        private Expression exp;
+        private Argument x;
+        private Color color;
+        private double unitSize;
         
-        public GraphicData(String expressionString, Color color){
-            this.xArg = new Argument("x");
-            this.expression = new Expression(expressionString, this.xArg);
+        // Обработка проблем с тангенсом
+        private boolean hasTan = false;
+        
+        public Graphic(String expressionString, Color color){
+            x = new Argument("x");
+            exp = new Expression(expressionString, x);
+            unitSize = GraphicPanel.DEFAULT_GRAPHIC_UNIT_SIZE;
             this.color = color;
+            
+            for(Token token : exp.getCopyOfInitialTokens()){
+                if(token.tokenStr == "tan"){
+                    hasTan = true;
+                    break;
+                }
+            }
+        }
+        
+        public Color getColor(){
+            return color;
+        }
+        
+        public void setUnitSize(double size){
+            unitSize = size;
+        }
+        
+        public double calculate(double x){
+            this.x.setArgumentValue(x / unitSize);
+            return exp.calculate() * unitSize;
         }
     }
     
@@ -88,10 +115,10 @@ public class GraphicPanel extends JPanel {
     private int offsetX = 0, offsetY = 0;
     private byte gridUnitSize;
     private double graphicScale, graphicUnitSize;
-    private ArrayList<GraphicData> graphics;
+    private ArrayList<Graphic> graphics;
     
-    private static final int DEFAULT_GRAPHIC_SCALE = 1;
-    private static final int DEFAULT_GRAPHIC_UNIT_SIZE = 30;
+    public static final int DEFAULT_GRAPHIC_SCALE = 1;
+    public static final int DEFAULT_GRAPHIC_UNIT_SIZE = 30;
     
     public GraphicPanel(){
         super();
@@ -101,7 +128,7 @@ public class GraphicPanel extends JPanel {
         graphicScale = DEFAULT_GRAPHIC_SCALE;
         gridUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
         graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE / DEFAULT_GRAPHIC_SCALE;
-        graphics = new ArrayList<GraphicData>();
+        graphics = new ArrayList<Graphic>();
         
         // Добавляем слушателей мыши
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -320,26 +347,24 @@ public class GraphicPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);    // Включаем антиалиасинг
         
         for(var graph : graphics){
-            g.setColor(graph.color);
+            g.setColor(graph.getColor());
         
             boolean hasLastPoint = false;
             double lastPointX = 0, lastPointY = 0;
-
+            
+            graph.setUnitSize(graphicUnitSize);                        // Устанавливаем размер графика
             for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
                 //realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
-                graph.xArg.setArgumentValue(realX / graphicUnitSize);
-                realY = graph.expression.calculate() * graphicUnitSize;
+                realY = graph.calculate(realX);
 
                 if(Double.isNaN(realY)){
-                    graph.xArg.setArgumentValue((realX - 0.01) / graphicUnitSize);
-                    double leftLimitSign = graph.expression.calculate() * graphicUnitSize;
+                    double leftLimitSign = graph.calculate(realX - 0.01);
                     leftLimitSign = Math.signum(leftLimitSign);
 
-                    graph.xArg.setArgumentValue((realX + 0.01) / graphicUnitSize);
-                    double rightLimitSign = graph.expression.calculate() * graphicUnitSize;
+                    double rightLimitSign = graph.calculate(realX + 0.01);
                     rightLimitSign = Math.signum(rightLimitSign);
 
                     double y = Double.POSITIVE_INFINITY;
@@ -404,7 +429,7 @@ public class GraphicPanel extends JPanel {
     }
     
     public void addGraphic(String expression, Color color){
-        graphics.add(new GraphicData(expression, color));
+        graphics.add(new Graphic(expression, color));
         repaint();
     }
     
