@@ -77,6 +77,9 @@ public class GraphicPanel extends JPanel {
         private Color color;
         private double unitSize;
         
+        private ArrayList<Expression> breakpointExpressions;
+        private Argument breakpointExpressionArgumentA, breakpointExpressionArgumentB;
+        
         // Обработка проблем с тангенсом
         private boolean hasTan = false;
         
@@ -85,6 +88,16 @@ public class GraphicPanel extends JPanel {
             exp = new Expression(expressionString, x);
             unitSize = GraphicPanel.DEFAULT_GRAPHIC_UNIT_SIZE;
             this.color = color;
+            
+            ArrayList<String> breakSubfuncsArray = new ArrayList<String>();
+            findBreakSubfunctions(breakSubfuncsArray, (ArrayList) exp.getCopyOfInitialTokens(), 0);
+            System.out.println(breakSubfuncsArray);
+            breakpointExpressionArgumentA = new Argument("a");
+            breakpointExpressionArgumentB = new Argument("b");
+            breakpointExpressions = new ArrayList<Expression>();
+            for(String s : breakSubfuncsArray){
+                breakpointExpressions.add(new Expression("solve(f(x), x, a, b)", new Function("f(x) = " + s), breakpointExpressionArgumentA, breakpointExpressionArgumentB));
+            }
             
             for(Token token : exp.getCopyOfInitialTokens()){
                 if(token.tokenStr == "tan"){
@@ -105,6 +118,55 @@ public class GraphicPanel extends JPanel {
         public double calculate(double x){
             this.x.setArgumentValue(x / unitSize);
             return exp.calculate() * unitSize;
+        }
+        
+        public void calculateBreakpoints(ArrayList<Double> points, double a, double b){
+            for(Expression e : breakpointExpressions){
+                breakpointExpressionArgumentA.setArgumentValue(a);
+                breakpointExpressionArgumentB.setArgumentValue(b);
+                while(breakpointExpressionArgumentB.getArgumentValue() >= breakpointExpressionArgumentA.getArgumentValue())
+                {
+                    double point = e.calculate();
+                    if(Double.isNaN(point))
+                        break;
+                    else{
+                        boolean canAdd = true;
+                        for(double d : points){
+                            if(d == point){
+                                canAdd = false;
+                            }
+                        }
+                        if(canAdd)
+                            points.add(point);
+                        breakpointExpressionArgumentA.setArgumentValue(point + 0.000001);
+                    }
+                }
+            }
+        }
+        
+        // Ищет подфункции, которые разрывают основную функцию
+        private static void findBreakSubfunctions(ArrayList<String> subfuncs, ArrayList<Token> tokens, int startIndex){
+            if("/".equals(tokens.get(startIndex).tokenStr)){
+                int tokenLevel = tokens.get(startIndex).tokenLevel;
+                String subfuncString = "";
+                for(int i = startIndex + 1; i < tokens.size(); i++){
+                    if(tokens.get(i).tokenLevel <= tokenLevel){
+                        if("".equals(subfuncString))
+                            subfuncString = tokens.get(i).tokenStr;
+                        else
+                            break;
+                    }
+                    else
+                        subfuncString += tokens.get(i).tokenStr;
+                }
+                subfuncs.add(subfuncString);
+            }
+            else{
+                for(int i = startIndex; i < tokens.size(); i++){
+                    if("/".equals(tokens.get(i).tokenStr))
+                        findBreakSubfunctions(subfuncs, tokens, i);
+                }
+            }
         }
     }
     
@@ -352,8 +414,18 @@ public class GraphicPanel extends JPanel {
             boolean hasLastPoint = false;
             double lastPointX = 0, lastPointY = 0;
             
+            int startX = -offsetX;
+            int finishX = width - offsetX - 1;
+            
+            ArrayList<Double> breakpoints = new ArrayList<Double>();
+            System.out.println("[" + (startX - width / 2) + "; " + (finishX - width / 2) + "]");
+            graph.calculateBreakpoints(breakpoints, startX - width / 2, finishX - width / 2);
+            for(double d : breakpoints){
+                System.out.println(d);
+            }
+            
             graph.setUnitSize(graphicUnitSize);                        // Устанавливаем размер графика
-            for(int x = -offsetX; x < width - offsetX; x++){           // Делаем цикл с левой стороны экрана до правой
+            for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
