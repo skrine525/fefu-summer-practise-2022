@@ -121,12 +121,18 @@ public class GraphicPanel extends JPanel {
         }
         
         public void calculateBreakpoints(ArrayList<Double> points, double a, double b){
+            a = a / unitSize;
+            b = b / unitSize;
+            
+            System.out.println("[" + a + "; " + b + "]");
+            
             for(Expression e : breakpointExpressions){
                 breakpointExpressionArgumentA.setArgumentValue(a);
                 breakpointExpressionArgumentB.setArgumentValue(b);
                 while(breakpointExpressionArgumentB.getArgumentValue() >= breakpointExpressionArgumentA.getArgumentValue())
                 {
                     double point = e.calculate();
+                    System.out.println(point);
                     if(Double.isNaN(point))
                         break;
                     else{
@@ -414,17 +420,17 @@ public class GraphicPanel extends JPanel {
             boolean hasLastPoint = false;
             double lastPointX = 0, lastPointY = 0;
             
+            graph.setUnitSize(graphicUnitSize);                        // Устанавливаем размер графика
+            
             int startX = -offsetX;
             int finishX = width - offsetX - 1;
             
             ArrayList<Double> breakpoints = new ArrayList<Double>();
-            System.out.println("[" + (startX - width / 2) + "; " + (finishX - width / 2) + "]");
-            graph.calculateBreakpoints(breakpoints, startX - width / 2, finishX - width / 2);
+            graph.calculateBreakpoints(breakpoints, (startX - width / 2), (finishX - width / 2));
             for(double d : breakpoints){
                 System.out.println(d);
             }
             
-            graph.setUnitSize(graphicUnitSize);                        // Устанавливаем размер графика
             for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
