@@ -124,17 +124,25 @@ public class GraphicPanel extends JPanel {
             a = a / unitSize;
             b = b / unitSize;
             
-            System.out.println("[" + a + "; " + b + "]");
+            //System.out.println("[" + a + "; " + b + "]");
             
             for(Expression e : breakpointExpressions){
                 breakpointExpressionArgumentA.setArgumentValue(a);
-                breakpointExpressionArgumentB.setArgumentValue(b);
-                while(breakpointExpressionArgumentB.getArgumentValue() >= breakpointExpressionArgumentA.getArgumentValue())
-                {
+                breakpointExpressionArgumentB.setArgumentValue(a + Math.PI);
+                while(true){
+                    if(breakpointExpressionArgumentB.getArgumentValue() > b)
+                        breakpointExpressionArgumentB.setArgumentValue(b);
+                    
                     double point = e.calculate();
-                    System.out.println(point);
-                    if(Double.isNaN(point))
-                        break;
+                    //System.out.println(point);
+                    if(Double.isNaN(point)){
+                        if(breakpointExpressionArgumentB.getArgumentValue() == b)
+                            break;
+                        else{
+                            breakpointExpressionArgumentA.setArgumentValue(breakpointExpressionArgumentB.getArgumentValue());
+                            breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
+                        }
+                    }
                     else{
                         boolean canAdd = true;
                         for(double d : points){
@@ -145,6 +153,7 @@ public class GraphicPanel extends JPanel {
                         if(canAdd)
                             points.add(point);
                         breakpointExpressionArgumentA.setArgumentValue(point + 0.000001);
+                        breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
                     }
                 }
             }
