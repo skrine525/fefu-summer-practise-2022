@@ -440,43 +440,33 @@ public class GraphicPanel extends JPanel {
                 System.out.println(d);
             }
             
+            int breakpointIndex = 0;
+            
             for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
                 //realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
                 realY = graph.calculate(realX);
-
-                if(Double.isNaN(realY)){
-                    double leftLimitSign = graph.calculate(realX - 0.01);
-                    leftLimitSign = Math.signum(leftLimitSign);
-
-                    double rightLimitSign = graph.calculate(realX + 0.01);
-                    rightLimitSign = Math.signum(rightLimitSign);
-
-                    double y = Double.POSITIVE_INFINITY;
-                    if(leftLimitSign == -1)
-                        y = Double.NEGATIVE_INFINITY;
-
-                    g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
-
-                    if(rightLimitSign == -1)
-                        lastPointY = Double.NEGATIVE_INFINITY;
-                    else if(rightLimitSign == 1)
-                        lastPointY = Double.POSITIVE_INFINITY;
-
-                    x++;
-                    lastPointX = x;
-                }
-                else{
+                
+                if(Double.isFinite(realY)){
                     int y = (int) Math.round(height / 2 - realY);
                     //System.out.println("f("+ realX + ")="+realY);
-
+                    
                     if(hasLastPoint){
-                        g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+                        if(breakpointIndex < breakpoints.size() && (breakpoints.get(breakpointIndex) < (realX / graphicUnitSize))){
+                            g2.draw(GraphicLine(lastPointX, lastPointY, x, Double.POSITIVE_INFINITY));
+                            breakpointIndex++;
 
-                        lastPointX = (double) x;
-                        lastPointY = (double) y;
+                            lastPointX = (double) x;
+                            lastPointY = Double.POSITIVE_INFINITY;
+                        }
+                        else{
+                            g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+
+                            lastPointX = (double) x;
+                            lastPointY = (double) y;
+                        }
                     }
                     else{
                         hasLastPoint = true;
@@ -484,6 +474,8 @@ public class GraphicPanel extends JPanel {
                         lastPointY = (double) y;
                     }
                 }
+                else
+                    hasLastPoint = false;
             }
         }
         
