@@ -74,7 +74,7 @@ public class GraphicPanel extends JPanel {
             finite = Double.NEGATIVE_INFINITY;
         else if(finite > 999)
             finite = Double.POSITIVE_INFINITY;
-        else if(finite > -1 && finite < 1)
+        else if(finite > -0.5 && finite < 0.5)
             finite = 0;
         return finite;
     }
@@ -145,7 +145,7 @@ public class GraphicPanel extends JPanel {
             
             for(Expression e : breakpointExpressions){
                 breakpointExpressionArgumentA.setArgumentValue(a);
-                breakpointExpressionArgumentB.setArgumentValue(a + Math.PI);
+                breakpointExpressionArgumentB.setArgumentValue(a + 1);
                 while(true){
                     if(breakpointExpressionArgumentB.getArgumentValue() > b)
                         breakpointExpressionArgumentB.setArgumentValue(b);
@@ -157,7 +157,7 @@ public class GraphicPanel extends JPanel {
                             break;
                         else{
                             breakpointExpressionArgumentA.setArgumentValue(breakpointExpressionArgumentB.getArgumentValue());
-                            breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
+                            breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + 1);
                         }
                     }
                     else{
@@ -170,7 +170,7 @@ public class GraphicPanel extends JPanel {
                         if(canAdd)
                             points.add(point);
                         breakpointExpressionArgumentA.setArgumentValue(point + 0.000001);
-                        breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
+                        breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + 1);
                     }
                 }
             }
@@ -467,7 +467,8 @@ public class GraphicPanel extends JPanel {
             
             ArrayList<Double> breakpoints = new ArrayList<Double>();
             graph.calculateBreakpoints(breakpoints, (startX - width / 2), (finishX - width / 2));
-          //System.out.println("breakpoints="+breakpoints);
+            System.out.print("["+(startX - width / 2) / graphicUnitSize+"; "+(finishX - width / 2 ) / graphicUnitSize +"] ");
+            System.out.println("breakpoints="+breakpoints);
           
           int tttt = 0;
             
@@ -522,18 +523,18 @@ public class GraphicPanel extends JPanel {
                 else{
                     double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX);
                     if(Double.isFinite(breakpoint)){
-                        double leftLimit = graph.calculate(breakpoint - 0.001, false);
-                        if(Double.isFinite(leftLimit)){
-                            leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                        tttt++;
+                        double leftY = graph.calculate(breakpoint - 0.001, false);
+                        double leftLimit = getLimitValueByFiniteValue(leftY);
+                        if(Double.isInfinite(leftLimit)){
                             g2.setColor(Color.blue);
                             g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
                             g2.setColor(graph.getColor());
                         }
 
-                        double rightLimit = graph.calculate(breakpoint + 0.001, false);
-                        if(Double.isFinite(rightLimit)){
-                            rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-                            
+                        double rightY = graph.calculate(breakpoint + 0.001, false);
+                        double rightLimit = getLimitValueByFiniteValue(rightY);
+                        if(Double.isInfinite(rightLimit)){
                             lastPointX = x;
                             lastPointY = rightLimit;
                         }
