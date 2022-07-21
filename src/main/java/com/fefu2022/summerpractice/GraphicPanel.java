@@ -24,30 +24,30 @@ public class GraphicPanel extends JPanel {
         int x1_int, x2_int, y1_int, y2_int;
         
         if(x1 == Double.POSITIVE_INFINITY)
-            x1_int = width;
+            x1_int = width + 4;
         else if(x1 == Double.NEGATIVE_INFINITY)
-            x1_int = 0;
+            x1_int = -5;
         else
             x1_int = ((int) x1) + offsetX;
         
         if(x2 == Double.POSITIVE_INFINITY)
-            x2_int = width;
+            x2_int = width + 4;
         else if(x2 == Double.NEGATIVE_INFINITY)
-            x2_int = 0;
+            x2_int = -5;
         else
             x2_int = ((int) x2) + offsetX;
         
         if(y1 == Double.NEGATIVE_INFINITY)
-            y1_int = height;
+            y1_int = height + 4;
         else if(y1 == Double.POSITIVE_INFINITY)
-            y1_int = 0;
+            y1_int = -5;
         else
             y1_int = ((int) y1) + offsetY;
         
         if(y2 == Double.NEGATIVE_INFINITY)
-            y2_int = height;
+            y2_int = height + 4;
         else if(y2 == Double.POSITIVE_INFINITY)
-            y2_int = 0;
+            y2_int = -5;
         else
             y2_int = ((int) y2) + offsetY;
         
@@ -157,6 +157,21 @@ public class GraphicPanel extends JPanel {
                     }
                 }
             }
+        }
+        
+        public boolean checkPassageThroughBreakpoint(ArrayList<Double> points, double current){
+            current = current / unitSize;
+            boolean contact = false;
+            
+            for(int i = 0; i < points.size(); i++){
+                double point = points.get(i);
+                if(point <= current){
+                    contact = true;
+                    points.remove(i);
+                }
+            }
+            
+            return contact;
         }
         
         // Ищет подфункции, которые разрывают основную функцию
@@ -436,11 +451,7 @@ public class GraphicPanel extends JPanel {
             
             ArrayList<Double> breakpoints = new ArrayList<Double>();
             graph.calculateBreakpoints(breakpoints, (startX - width / 2), (finishX - width / 2));
-            for(double d : breakpoints){
-                System.out.println(d);
-            }
-            
-            int breakpointIndex = 0;
+//          System.out.println(breakpoints);        
             
             for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
@@ -453,58 +464,53 @@ public class GraphicPanel extends JPanel {
                     int y = (int) Math.round(height / 2 - realY);
                     //System.out.println("f("+ realX + ")="+realY);
                     
-                    if(hasLastPoint){
-                        if(breakpointIndex < breakpoints.size() && (breakpoints.get(breakpointIndex) < (realX / graphicUnitSize))){
-                            g2.draw(GraphicLine(lastPointX, lastPointY, x, Double.POSITIVE_INFINITY));
-                            breakpointIndex++;
+                     if(hasLastPoint){
+                        if(graph.checkPassageThroughBreakpoint(breakpoints, realX)){
+                            double leftLimit = graph.calculate((lastPointX - width / 2) + 0.001);
+                            leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 
-                            lastPointX = (double) x;
-                            lastPointY = Double.POSITIVE_INFINITY;
+                            double rightLimit = graph.calculate(realX - 0.001);
+                            rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                            
+                            g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
+                            g2.draw(GraphicLine(x, rightLimit, x, y));
+                            
+                            lastPointX = x;
+                            lastPointY = y;
                         }
                         else{
                             g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
 
-                            lastPointX = (double) x;
-                            lastPointY = (double) y;
+                            lastPointX = x;
+                            lastPointY = y;
                         }
                     }
                     else{
                         hasLastPoint = true;
-                        lastPointX = (double) x;
-                        lastPointY = (double) y;
+                        lastPointX = x;
+                        lastPointY = y;
                     }
                 }
-                else
-                    hasLastPoint = false;
+                else{
+                    if(graph.checkPassageThroughBreakpoint(breakpoints, realX)){
+                        double leftLimit = graph.calculate(realX - 0.001);
+                        leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+
+                        double rightLimit = graph.calculate(realX + 0.001);
+                        rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+
+                        g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
+
+                        lastPointX = x;
+                        lastPointY = rightLimit;
+                    }
+                    else
+                        hasLastPoint = false;
+                }
             }
         }
         
         g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
-    }
-    
-    private double calculateFunction(String exp, double x)/* throws Exception*/{
-        /*
-        MathParser parser = new MathParser();
-        parser.setVariable("x", x);
-        
-        System.out.print("f("+x+")=");
-        
-        double y;
-        try{
-            y = parser.Parse(exp);
-        }
-        catch(Exception e){
-            y = 0;
-        }
-        
-        System.out.println(y);
-        */
-        
-        Argument a = new Argument("x="+x);
-        Expression e = new Expression(exp, a);
-        double y = e.calculate();
-        
-        return y;
     }
     
     public void addGraphic(String expression, Color color){
