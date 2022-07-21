@@ -68,6 +68,17 @@ public class GraphicPanel extends JPanel {
             return String.valueOf(mark);
     }
     
+    // Метод для вычисление значения предела по числовому значению
+    private static double getLimitValueByFiniteValue(double finite){
+        if(finite < -999)
+            finite = Double.NEGATIVE_INFINITY;
+        else if(finite > 999)
+            finite = Double.POSITIVE_INFINITY;
+        else if(finite > -1 && finite < 1)
+            finite = 0;
+        return finite;
+    }
+    
     ////////////////////////////////////////
     // Внутренние классы
     
@@ -115,9 +126,15 @@ public class GraphicPanel extends JPanel {
             unitSize = size;
         }
         
-        public double calculate(double x){
-            this.x.setArgumentValue(x / unitSize);
-            return exp.calculate() * unitSize;
+        public double calculate(double x, boolean useScale){
+            if(useScale){
+                this.x.setArgumentValue(x / unitSize);
+                return exp.calculate() * unitSize;
+            }
+            else{
+                this.x.setArgumentValue(x);
+                return exp.calculate();
+            }
         }
         
         public void calculateBreakpoints(ArrayList<Double> points, double a, double b){
@@ -159,19 +176,18 @@ public class GraphicPanel extends JPanel {
             }
         }
         
-        public boolean checkPassageThroughBreakpoint(ArrayList<Double> points, double current){
+        public double checkPassageThroughBreakpoint(ArrayList<Double> points, double current){
             current = current / unitSize;
-            boolean contact = false;
             
             for(int i = 0; i < points.size(); i++){
                 double point = points.get(i);
                 if(point <= current){
-                    contact = true;
                     points.remove(i);
+                    return point;
                 }
             }
             
-            return contact;
+            return Double.NaN;
         }
         
         // Ищет подфункции, которые разрывают основную функцию
@@ -451,29 +467,41 @@ public class GraphicPanel extends JPanel {
             
             ArrayList<Double> breakpoints = new ArrayList<Double>();
             graph.calculateBreakpoints(breakpoints, (startX - width / 2), (finishX - width / 2));
-//          System.out.println(breakpoints);        
+          //System.out.println("breakpoints="+breakpoints);
+          
+          int tttt = 0;
             
             for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
                 //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
                 //realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
-                realY = graph.calculate(realX);
+                realY = graph.calculate(realX, true);
                 
                 if(Double.isFinite(realY)){
                     int y = (int) Math.round(height / 2 - realY);
                     //System.out.println("f("+ realX + ")="+realY);
                     
                      if(hasLastPoint){
-                        if(graph.checkPassageThroughBreakpoint(breakpoints, realX)){
-                            double leftLimit = graph.calculate((lastPointX - width / 2) + 0.001);
-                            leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                        double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX);
+                        if(Double.isFinite(breakpoint)){
+                            double leftY = graph.calculate(breakpoint - 0.0001, false);
+                            double leftLimit = getLimitValueByFiniteValue(leftY);
 
-                            double rightLimit = graph.calculate(realX - 0.001);
-                            rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                            double rightY = graph.calculate(breakpoint + 0.0001, false);
+                            double rightLimit = getLimitValueByFiniteValue(rightY);
                             
-                            g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
-                            g2.draw(GraphicLine(x, rightLimit, x, y));
+                            if(tttt == 0){
+                                System.out.println(leftY + " " + rightY);
+                            }
+                            tttt++;
+                            
+                            if(!Double.isInfinite(leftLimit) && !Double.isInfinite(rightLimit))
+                                g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
+                            else{
+                                g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
+                                g2.draw(GraphicLine(x, rightLimit, x, y));
+                            }
                             
                             lastPointX = x;
                             lastPointY = y;
@@ -492,17 +520,25 @@ public class GraphicPanel extends JPanel {
                     }
                 }
                 else{
-                    if(graph.checkPassageThroughBreakpoint(breakpoints, realX)){
-                        double leftLimit = graph.calculate(realX - 0.001);
-                        leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                    double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX);
+                    if(Double.isFinite(breakpoint)){
+                        double leftLimit = graph.calculate(breakpoint - 0.001, false);
+                        if(Double.isFinite(leftLimit)){
+                            leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                            g2.setColor(Color.blue);
+                            g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
+                            g2.setColor(graph.getColor());
+                        }
 
-                        double rightLimit = graph.calculate(realX + 0.001);
-                        rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-
-                        g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
-
-                        lastPointX = x;
-                        lastPointY = rightLimit;
+                        double rightLimit = graph.calculate(breakpoint + 0.001, false);
+                        if(Double.isFinite(rightLimit)){
+                            rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                            
+                            lastPointX = x;
+                            lastPointY = rightLimit;
+                        }
+                        else
+                            hasLastPoint = false;
                     }
                     else
                         hasLastPoint = false;
