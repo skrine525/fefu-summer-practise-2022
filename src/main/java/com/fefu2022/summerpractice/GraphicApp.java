@@ -12,7 +12,8 @@ public class GraphicApp {
     private JTextField functionTextField;
     private GraphicPanel graphicPanel;
 
-    public GraphicApp(){
+
+    public GraphicApp() {
         createFrame();
         initElements();
     }
@@ -23,7 +24,7 @@ public class GraphicApp {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    public void show(){
+    public void show() {
         frame.setVisible(true);
     }
 
@@ -40,22 +41,38 @@ public class GraphicApp {
 
         Box leftPanel = createLeftPanel(); // Создаем левую панель в другом методе
         mainContainer.add(leftPanel, BorderLayout.WEST); // Эта панель будет слева
-        
+
         graphicPanel = new GraphicPanel();
         graphicPanel.setBackground(Color.WHITE);
         mainContainer.add(graphicPanel);
     }
 
+
     private Box createLeftPanel() {
-        Box panel = Box.createVerticalBox();  // Вертикальный Box
+        Box panel = Box.createVerticalBox();
+
         // Box это контейнер, в котором элементы выстраиваются в одном порядке
-        
+
         panel.add(Box.createVerticalStrut(10)); // Отступы
         JLabel title = new JLabel("<html>Панель управления</html>", JLabel.CENTER);
+        JButton information = new JButton("<html><span >helper</span></html>");
+
+        information.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                JOptionPane.showMessageDialog(null, "<html><div><p style=\"border:black 1px solid \" ><b>Степенные, показательные илогарифмические функции:</b><br><br><i><b>экспонента.....................................................</b></i> exp(x)<br><br><i><b>натуральный логарифм.................................</b></i>ln (x)<br><br><i><b>логарифм..........................................................</b></i>log <sub>a</sub>(x)>>>>>log_a (x)<br><br><i><b>степень............................................................</b></i>x<sup>n</sup>>>>>>x^n<br><br></p><p style=\"border:black 1px solid \" ><b>Тригонометрическиефункции:</b><br><br><i><b>косеканс...........................................................</b></i></sup>csc(x)<br><br><i><b>косеканс...........................................................</b></i></sup>csc(x)<br><br><i><b>секанс...............................................................</b></i></sup>sec(x)<br><br></p></div><p style=\"border:black 1px solid \" ><b>Обратныетригонометрическиефункции:</b><br><br><i><b>арксинус.........................................................</b></i> arcsin(x)<br><br><i><b>арккосинус......................................................</b></i>arccos(x)<br><br><i><b>арктангенс.....................................................</b></i>arctan(x)<br><br><i><b>арккотангенс.................................................</b></i>arcctan(x)<br><br><i><b>арккосеканс.....................................................</b></i></sup>arccsc(x)<br><br><i><b>арксеканс........................................................</b></i></sup>arcsec(x)<br><br></p><p style=\"border:black 1px solid \" ><b>Гиперболические функции :</b><br><br><i><b>гиперболический синус................................</b></i> sinh(x)<br><br><i><b>гиперболический косинус............................</b></i>cosh(x)<br><br><i><b>гиперболический тангенс..............................</b></i>tanh(x)<br><br><i><b>гиперболический котангенс......................</b></i>ctanh(x)<br><br><i><b>гиперболический косеканс...........................</b></i></sup>csch(x)<br><br><i><b>гиперболический секанс................................</b></i></sup>sech(x)<br><br></p></div></html>");
+
+            }
+        });
+        JOptionPane.showMessageDialog(information, "<html><br><h2>Инструкция использования графического калькулятора</h2><p>Для перемещение по графику <b>зажмите ЛКМ</b> и двигайте курсором мыши</p><br><p>Для маштабирования графика используйте <b>колесо мыши</b> </p></html>");
+        JOptionPane.showMessageDialog(information, "<html><p>в графичесом колькуляторе работают такие мат функции:</p><br><div><p style=\"border:black 1px solid \" ><b>Степенные, показательные илогарифмические функции:</b><br><br><i><b>экспонента.....................................................</b></i> exp(x)<br><br><i><b>натуральный логарифм.................................</b></i>ln (x)<br><br><i><b>логарифм..........................................................</b></i>log <sub>a</sub>(x)>>>>>log_a (x)<br><br><i><b>степень............................................................</b></i>x<sup>n</sup>>>>>>x^n<br><br></p><p style=\"border:black 1px solid \" ><b>Тригонометрическиефункции:</b><br><br><i><b>косеканс...........................................................</b></i></sup>csc(x)<br><br><i><b>косеканс...........................................................</b></i></sup>csc(x)<br><br><i><b>секанс...............................................................</b></i></sup>sec(x)<br><br></p></div><p style=\"border:black 1px solid \" ><b>Обратныетригонометрическиефункции:</b><br><br><i><b>арксинус.........................................................</b></i> arcsin(x)<br><br><i><b>арккосинус......................................................</b></i>arccos(x)<br><br><i><b>арктангенс.....................................................</b></i>arctan(x)<br><br><i><b>арккотангенс.................................................</b></i>arcctan(x)<br><br><i><b>арккосеканс.....................................................</b></i></sup>arccsc(x)<br><br><i><b>арксеканс........................................................</b></i></sup>arcsec(x)<br><br></p><p style=\"border:black 1px solid \" ><b>Гиперболические функции :</b><br><br><i><b>гиперболический синус................................</b></i> sinh(x)<br><br><i><b>гиперболический косинус............................</b></i>cosh(x)<br><br><i><b>гиперболический тангенс..............................</b></i>tanh(x)<br><br><i><b>гиперболический котангенс......................</b></i>ctanh(x)<br><br><i><b>гиперболический косеканс...........................</b></i></sup>csch(x)<br><br><i><b>гиперболический секанс................................</b></i></sup>sech(x)<br><br></p></div></html>");
+
+
         // Чтобы добавить перевод строки в тексте, нужно писать в тегах <html>
-        title.setFont(new Font(null, Font.BOLD, 12)); // изменяем шрифт
-        
+        information.setFont(new Font(null, Font.ITALIC, 12)); // изменяем шрифт
+
         panel.add(title);
+
 
         //panel.add(Box.createVerticalStrut(20)); // Отступы
         panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
@@ -63,39 +80,43 @@ public class GraphicApp {
         functionTextField = new JTextField(8);  // Поле ввода названия
         functionTextField.setMaximumSize(new Dimension(300, 30)); // Чтобы не был слишком большим
         panel.add(functionTextField);
-        functionTextField.addActionListener(new AbstractAction(){
+        functionTextField.addActionListener(new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 graphicPanel.addGraphic(functionTextField.getText(), Color.RED);
                 functionTextField.setText("");
             }
         });
         JButton clearButton = new JButton();
         clearButton.setText("Очистить");
-        clearButton.addActionListener(new ActionListener(){
+
+        clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 graphicPanel.clear();
                 functionTextField.setText("");
             }
-            
+
         });
         panel.add(clearButton);
-        
+
         JButton moveToOriginButton = new JButton();
         moveToOriginButton.setText("Центр графика");
-        moveToOriginButton.addActionListener(new ActionListener(){
+        moveToOriginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 graphicPanel.moveToOrigin();
             }
-            
+
         });
         panel.add(moveToOriginButton);
-
+        panel.add(information);
         panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
 
+
+
         return panel;
+
     }
+
 }
