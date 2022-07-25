@@ -74,7 +74,7 @@ public class GraphicPanel extends JPanel {
             finite = Double.NEGATIVE_INFINITY;
         else if(finite > 999)
             finite = Double.POSITIVE_INFINITY;
-        else if(finite > -1 && finite < 1)
+        else if(finite > -0.5 && finite < 0.5)
             finite = 0;
         return finite;
     }
@@ -83,81 +83,82 @@ public class GraphicPanel extends JPanel {
     // Внутренние классы
     
     public class Graphic{
+        enum ReadyStatus {Ready, ErrorSyntax, ErrorArgumentX};
+        
         private Expression exp;
         private Argument x;
         private Color color;
-        private double unitSize;
+        private ReadyStatus readyStatus;
         
         private ArrayList<Expression> breakpointExpressions;
         private Argument breakpointExpressionArgumentA, breakpointExpressionArgumentB;
         
-        // Обработка проблем с тангенсом
-        private boolean hasTan = false;
-        
         public Graphic(String expressionString, Color color){
             x = new Argument("x");
             exp = new Expression(expressionString, x);
-            unitSize = GraphicPanel.DEFAULT_GRAPHIC_UNIT_SIZE;
-            this.color = color;
             
-            ArrayList<String> breakSubfuncsArray = new ArrayList<String>();
-            findBreakSubfunctions(breakSubfuncsArray, (ArrayList) exp.getCopyOfInitialTokens(), 0);
-            System.out.println(breakSubfuncsArray);
-            breakpointExpressionArgumentA = new Argument("a");
-            breakpointExpressionArgumentB = new Argument("b");
-            breakpointExpressions = new ArrayList<Expression>();
-            for(String s : breakSubfuncsArray){
-                breakpointExpressions.add(new Expression("solve(f(x), x, a, b)", new Function("f(x) = " + s), breakpointExpressionArgumentA, breakpointExpressionArgumentB));
-            }
-            
-            for(Token token : exp.getCopyOfInitialTokens()){
-                if(token.tokenStr == "tan"){
-                    hasTan = true;
-                    break;
+            if(exp.checkSyntax()){
+                boolean checkX = false;
+                for(var token : exp.getCopyOfInitialTokens()){
+                    if("x".equals(token.tokenStr)){
+                        System.out.println(token.tokenStr);
+                        checkX = true;
+                        break;
+                    }
                 }
+                
+                if(checkX){
+                    this.color = color;
+                    ArrayList<String> breakSubfuncsArray = new ArrayList<>();
+                    findBreakSubfunctions(breakSubfuncsArray, (ArrayList) exp.getCopyOfInitialTokens(), 0);
+                    breakpointExpressionArgumentA = new Argument("a");
+                    breakpointExpressionArgumentB = new Argument("b");
+                    breakpointExpressions = new ArrayList<>();
+                    for(String s : breakSubfuncsArray){
+                        breakpointExpressions.add(new Expression("solve(f(x), x, a, b)", new Function("f(x) = " + s), breakpointExpressionArgumentA, breakpointExpressionArgumentB));
+                    }
+                    readyStatus = ReadyStatus.Ready;
+                }
+                else
+                    readyStatus = ReadyStatus.ErrorArgumentX;
+              
             }
+            else
+                readyStatus = ReadyStatus.ErrorSyntax;
         }
         
         public Color getColor(){
             return color;
         }
         
-        public void setUnitSize(double size){
-            unitSize = size;
+        public ReadyStatus getReadyStatus(){
+            return readyStatus;
         }
         
-        public double calculate(double x, boolean useScale){
-            if(useScale){
-                this.x.setArgumentValue(x / unitSize);
-                return exp.calculate() * unitSize;
-            }
-            else{
-                this.x.setArgumentValue(x);
-                return exp.calculate();
-            }
+        public String getExpressionErrorMessage(){
+            return exp.getErrorMessage();
+        }
+        
+        public double calculate(double x){
+            this.x.setArgumentValue(x);
+            return exp.calculate();
         }
         
         public void calculateBreakpoints(ArrayList<Double> points, double a, double b){
-            a = a / unitSize;
-            b = b / unitSize;
-            
-            //System.out.println("[" + a + "; " + b + "]");
-            
             for(Expression e : breakpointExpressions){
                 breakpointExpressionArgumentA.setArgumentValue(a);
-                breakpointExpressionArgumentB.setArgumentValue(a + Math.PI);
+                breakpointExpressionArgumentB.setArgumentValue(a + 1);
                 while(true){
                     if(breakpointExpressionArgumentB.getArgumentValue() > b)
                         breakpointExpressionArgumentB.setArgumentValue(b);
                     
                     double point = e.calculate();
-                    //System.out.println(point);
                     if(Double.isNaN(point)){
                         if(breakpointExpressionArgumentB.getArgumentValue() == b)
                             break;
                         else{
                             breakpointExpressionArgumentA.setArgumentValue(breakpointExpressionArgumentB.getArgumentValue());
-                            breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
+                            breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + 1);
                         }
                     }
                     else{
@@ -170,15 +171,13 @@ public class GraphicPanel extends JPanel {
                         if(canAdd)
                             points.add(point);
                         breakpointExpressionArgumentA.setArgumentValue(point + 0.000001);
-                        breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + Math.PI);
+                        breakpointExpressionArgumentB.setArgumentValue(breakpointExpressionArgumentA.getArgumentValue() + 1);
                     }
                 }
             }
         }
         
         public double checkPassageThroughBreakpoint(ArrayList<Double> points, double current){
-            current = current / unitSize;
-            
             for(int i = 0; i < points.size(); i++){
                 double point = points.get(i);
                 if(point <= current){
@@ -236,7 +235,7 @@ public class GraphicPanel extends JPanel {
         graphicScale = DEFAULT_GRAPHIC_SCALE;
         gridUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE;
         graphicUnitSize = DEFAULT_GRAPHIC_UNIT_SIZE / DEFAULT_GRAPHIC_SCALE;
-        graphics = new ArrayList<Graphic>();
+        graphics = new ArrayList<>();
         
         // Добавляем слушателей мыши
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -460,41 +459,28 @@ public class GraphicPanel extends JPanel {
             boolean hasLastPoint = false;
             double lastPointX = 0, lastPointY = 0;
             
-            graph.setUnitSize(graphicUnitSize);                        // Устанавливаем размер графика
-            
             int startX = -offsetX;
             int finishX = width - offsetX - 1;
             
-            ArrayList<Double> breakpoints = new ArrayList<Double>();
-            graph.calculateBreakpoints(breakpoints, (startX - width / 2), (finishX - width / 2));
-          //System.out.println("breakpoints="+breakpoints);
-          
-          int tttt = 0;
+            ArrayList<Double> breakpoints = new ArrayList<>();
+            graph.calculateBreakpoints(breakpoints, (startX - width / 2) / graphicUnitSize, (finishX - width / 2) / graphicUnitSize);
             
             for(int x = startX; x <= finishX; x++){           // Делаем цикл с левой стороны экрана до правой
-                //boolean canDraw = true;
                 double realX = x - width / 2, realY = 0;   // Так, как слева от оси OX минус, то отнимаем от текущей точки центральную точку
 
-                //realY = calculateFunction(graph.expression, realX / graphicUnitSize) * graphicUnitSize;
-                realY = graph.calculate(realX, true);
+                realY = graph.calculate(realX / graphicUnitSize) * graphicUnitSize;
                 
                 if(Double.isFinite(realY)){
                     int y = (int) Math.round(height / 2 - realY);
-                    //System.out.println("f("+ realX + ")="+realY);
                     
                      if(hasLastPoint){
-                        double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX);
+                        double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX / graphicUnitSize);
                         if(Double.isFinite(breakpoint)){
-                            double leftY = graph.calculate(breakpoint - 0.0001, false);
+                            double leftY = graph.calculate(breakpoint - 0.0001);
                             double leftLimit = getLimitValueByFiniteValue(leftY);
 
-                            double rightY = graph.calculate(breakpoint + 0.0001, false);
+                            double rightY = graph.calculate(breakpoint + 0.0001);
                             double rightLimit = getLimitValueByFiniteValue(rightY);
-                            
-                            if(tttt == 0){
-                                System.out.println(leftY + " " + rightY);
-                            }
-                            tttt++;
                             
                             if(!Double.isInfinite(leftLimit) && !Double.isInfinite(rightLimit))
                                 g2.draw(GraphicLine(lastPointX, lastPointY, x, y));
@@ -520,20 +506,19 @@ public class GraphicPanel extends JPanel {
                     }
                 }
                 else{
-                    double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX);
+                    double breakpoint = graph.checkPassageThroughBreakpoint(breakpoints, realX / graphicUnitSize);
                     if(Double.isFinite(breakpoint)){
-                        double leftLimit = graph.calculate(breakpoint - 0.001, false);
-                        if(Double.isFinite(leftLimit)){
-                            leftLimit = Math.signum(leftLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+                        double leftY = graph.calculate(breakpoint - 0.001);
+                        double leftLimit = getLimitValueByFiniteValue(leftY);
+                        if(Double.isInfinite(leftLimit)){
                             g2.setColor(Color.blue);
                             g2.draw(GraphicLine(lastPointX, lastPointY, x, leftLimit));
                             g2.setColor(graph.getColor());
                         }
 
-                        double rightLimit = graph.calculate(breakpoint + 0.001, false);
-                        if(Double.isFinite(rightLimit)){
-                            rightLimit = Math.signum(rightLimit) > 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-                            
+                        double rightY = graph.calculate(breakpoint + 0.001);
+                        double rightLimit = getLimitValueByFiniteValue(rightY);
+                        if(Double.isInfinite(rightLimit)){
                             lastPointX = x;
                             lastPointY = rightLimit;
                         }
@@ -549,9 +534,14 @@ public class GraphicPanel extends JPanel {
         g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
     }
     
-    public void addGraphic(String expression, Color color){
-        graphics.add(new Graphic(expression, color));
-        repaint();
+    public Graphic.ReadyStatus addGraphic(String expression, Color color){
+        Graphic graph = new Graphic(expression, color);
+        if(graph.getReadyStatus() == Graphic.ReadyStatus.Ready){
+            graphics.add(graph);
+            repaint();
+        }
+        
+        return graph.getReadyStatus();
     }
     
     public void clear(){

@@ -1,5 +1,6 @@
 package com.fefu2022.summerpractice;
 
+import com.fefu2022.summerpractice.GraphicPanel.Graphic;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -94,8 +95,13 @@ public class GraphicApp {
         functionTextField.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                graphicPanel.addGraphic(functionTextField.getText(), Color.RED);
-                functionTextField.setText("");
+                Graphic.ReadyStatus readyStatus = graphicPanel.addGraphic(functionTextField.getText(), Color.RED);
+                if(readyStatus == Graphic.ReadyStatus.Ready)
+                    functionTextField.setText("");
+                else if (readyStatus == Graphic.ReadyStatus.ErrorSyntax)
+                    JOptionPane.showMessageDialog(new JFrame(), "Неверно введена функция", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                else
+                    JOptionPane.showMessageDialog(new JFrame(), "Не найден аргумент X в заданной функции", "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
         });
         JButton clearButton = new JButton();
