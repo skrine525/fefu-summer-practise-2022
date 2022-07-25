@@ -83,9 +83,12 @@ public class GraphicPanel extends JPanel {
     // Внутренние классы
     
     public class Graphic{
+        enum ReadyStatus {Ready, ErrorSyntax, ErrorArgumentX};
+        
         private Expression exp;
         private Argument x;
         private Color color;
+        private ReadyStatus readyStatus;
         
         private ArrayList<Expression> breakpointExpressions;
         private Argument breakpointExpressionArgumentA, breakpointExpressionArgumentB;
@@ -93,20 +96,47 @@ public class GraphicPanel extends JPanel {
         public Graphic(String expressionString, Color color){
             x = new Argument("x");
             exp = new Expression(expressionString, x);
-            this.color = color;
             
-            ArrayList<String> breakSubfuncsArray = new ArrayList<>();
-            findBreakSubfunctions(breakSubfuncsArray, (ArrayList) exp.getCopyOfInitialTokens(), 0);
-            breakpointExpressionArgumentA = new Argument("a");
-            breakpointExpressionArgumentB = new Argument("b");
-            breakpointExpressions = new ArrayList<>();
-            for(String s : breakSubfuncsArray){
-                breakpointExpressions.add(new Expression("solve(f(x), x, a, b)", new Function("f(x) = " + s), breakpointExpressionArgumentA, breakpointExpressionArgumentB));
+            if(exp.checkSyntax()){
+                boolean checkX = false;
+                for(var token : exp.getCopyOfInitialTokens()){
+                    if("x".equals(token.tokenStr)){
+                        System.out.println(token.tokenStr);
+                        checkX = true;
+                        break;
+                    }
+                }
+                
+                if(checkX){
+                    this.color = color;
+                    ArrayList<String> breakSubfuncsArray = new ArrayList<>();
+                    findBreakSubfunctions(breakSubfuncsArray, (ArrayList) exp.getCopyOfInitialTokens(), 0);
+                    breakpointExpressionArgumentA = new Argument("a");
+                    breakpointExpressionArgumentB = new Argument("b");
+                    breakpointExpressions = new ArrayList<>();
+                    for(String s : breakSubfuncsArray){
+                        breakpointExpressions.add(new Expression("solve(f(x), x, a, b)", new Function("f(x) = " + s), breakpointExpressionArgumentA, breakpointExpressionArgumentB));
+                    }
+                    readyStatus = ReadyStatus.Ready;
+                }
+                else
+                    readyStatus = ReadyStatus.ErrorArgumentX;
+              
             }
+            else
+                readyStatus = ReadyStatus.ErrorSyntax;
         }
         
         public Color getColor(){
             return color;
+        }
+        
+        public ReadyStatus getReadyStatus(){
+            return readyStatus;
+        }
+        
+        public String getExpressionErrorMessage(){
+            return exp.getErrorMessage();
         }
         
         public double calculate(double x){
@@ -504,9 +534,14 @@ public class GraphicPanel extends JPanel {
         g2.setStroke(lastStroke); // Возвращаем предыдущий Stroke
     }
     
-    public void addGraphic(String expression, Color color){
-        graphics.add(new Graphic(expression, color));
-        repaint();
+    public Graphic.ReadyStatus addGraphic(String expression, Color color){
+        Graphic graph = new Graphic(expression, color);
+        if(graph.getReadyStatus() == Graphic.ReadyStatus.Ready){
+            graphics.add(graph);
+            repaint();
+        }
+        
+        return graph.getReadyStatus();
     }
     
     public void clear(){
