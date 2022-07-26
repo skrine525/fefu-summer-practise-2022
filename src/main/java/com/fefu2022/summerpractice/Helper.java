@@ -11,6 +11,7 @@ public class Helper {
     private JButton button1;
     private JLabel label;
     private JButton button2;
+    private JPanel panel1;
     private static int index = 0;
     String[] ArrayMessage;
 
@@ -131,5 +132,12 @@ public class Helper {
     public void setVisibleHelperFrame(boolean flag){
         helperJFrame.setVisible(flag);
 
+    }
+
+    private void createUIComponents() {
+
+       button1=new JButton("далее");
+       button2=new JButton("назад");
+       label=new JLabel(".");
     }
 }
