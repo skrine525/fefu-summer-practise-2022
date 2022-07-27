@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="29d05016-c4f2-4f51-b75a-c12230e39f87" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/GraphicApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/GraphicApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/GraphicPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/GraphicPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/Helper.form" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/Helper.form" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/Helper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fefu2022/summerpractice/Helper.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -130,6 +133,7 @@
       <workItem from="1658216007809" duration="1155000" />
       <workItem from="1658375518782" duration="17016000" />
       <workItem from="1658650499655" duration="24773000" />
+      <workItem from="1658831861085" duration="9686000" />
     </task>
     <servers />
   </component>

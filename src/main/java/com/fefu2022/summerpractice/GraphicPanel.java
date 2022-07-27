@@ -1,5 +1,10 @@
 package com.fefu2022.summerpractice;
 
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
+import org.mariuszgromada.math.mxparser.Function;
+import org.mariuszgromada.math.mxparser.parsertokens.Token;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -10,10 +15,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-
-// Какой-то чоткий прекрасный мат. парсер
-import org.mariuszgromada.math.mxparser.*;
-import org.mariuszgromada.math.mxparser.parsertokens.Token;
 
 public class GraphicPanel extends JPanel {
     ////////////////////////////////////////
@@ -119,8 +120,9 @@ public class GraphicPanel extends JPanel {
                     }
                     readyStatus = ReadyStatus.Ready;
                 }
-                else
+                else {
                     readyStatus = ReadyStatus.ErrorArgumentX;
+                }
               
             }
             else

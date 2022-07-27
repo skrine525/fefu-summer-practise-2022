@@ -19,6 +19,7 @@ public class GraphicApp {
         this.helper=helper;
         createFrame();
         initElements();
+
     }
 
     private void createFrame() {
@@ -36,6 +37,7 @@ public class GraphicApp {
     private void initElements() {
         Container mainContainer = frame.getContentPane();
         mainContainer.setLayout(new BorderLayout());
+//        frame.setMinimumSize(new Dimension(1920,1080));
 
         JPanel bottomPanel = new JPanel(); // Нижняя панель состояния
         bottomPanel.setBackground(Color.lightGray); // Фон светло-серый
@@ -63,8 +65,8 @@ public class GraphicApp {
         // Box это контейнер, в котором элементы выстраиваются в одном порядке
 
         panel.add(Box.createVerticalStrut(10)); // Отступы
-        JLabel title = new JLabel("<html>Панель управления</html>", JLabel.CENTER);
-        JButton information = new JButton("<html><span >helper</span></html>");
+        JLabel title = new JLabel("<html><br></br><br></br>Панель управления</html>", JLabel.CENTER);
+        JButton information = new JButton("<html>Справка</html>");
 
         information.addActionListener(new ActionListener() {
             @Override
@@ -81,7 +83,7 @@ public class GraphicApp {
 
 
         // Чтобы добавить перевод строки в тексте, нужно писать в тегах <html>
-        information.setFont(new Font(null, Font.ITALIC, 12)); // изменяем шрифт
+        information.setFont(new Font(null, Font.BOLD, 10)); // изменяем шрифт
 
         panel.add(title);
 
@@ -90,12 +92,13 @@ public class GraphicApp {
         panel.add(Box.createVerticalGlue()); // Заполнитель пустого пространства
         panel.add(new JLabel("Функция:"));
         functionTextField = new JTextField(8);  // Поле ввода названия
-        functionTextField.setMaximumSize(new Dimension(300, 30)); // Чтобы не был слишком большим
+        functionTextField.setSize(100,1);
+       functionTextField.setMaximumSize(new Dimension(3000, 30)); // Чтобы не был слишком большим
         panel.add(functionTextField);
         functionTextField.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Graphic.ReadyStatus readyStatus = graphicPanel.addGraphic(functionTextField.getText(), Color.RED);
+                Graphic.ReadyStatus readyStatus = graphicPanel.addGraphic(functionTextField.getText(),new Color((int)(Math.random()*256),(int)(Math.random()*256),(int)(Math.random()*256)));
                 if(readyStatus == Graphic.ReadyStatus.Ready)
                     functionTextField.setText("");
                 else if (readyStatus == Graphic.ReadyStatus.ErrorSyntax)
@@ -105,7 +108,8 @@ public class GraphicApp {
             }
         });
         JButton clearButton = new JButton();
-        clearButton.setText("Очистить");
+        clearButton.setText("<html>Очистить</html>");
+        clearButton.setFont(new Font(null, Font.BOLD, 10));
 
         clearButton.addActionListener(new ActionListener() {
             @Override
@@ -118,7 +122,8 @@ public class GraphicApp {
         panel.add(clearButton);
 
         JButton moveToOriginButton = new JButton();
-        moveToOriginButton.setText("Центр графика");
+        moveToOriginButton.setText("<html>Центр графика</html>");
+        moveToOriginButton.setFont(new Font(null, Font.BOLD, 10));
         moveToOriginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -135,6 +140,9 @@ public class GraphicApp {
 
         return panel;
 
+
     }
 
+
 }
+
